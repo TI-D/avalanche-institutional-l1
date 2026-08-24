@@ -2,9 +2,6 @@
 set -euo pipefail
 # shellcheck source=lib.sh
 source "$(dirname "$0")/lib.sh"
-echo "Northstar L1 health"
-if need_jq; then
-  api | jq '{summary, validators: [.state.validators[] | {name,status,nodeId,az}]}'
-else
-  api
-fi
+need_jq
+echo "Stage 1 model health (not AvalancheGo)"
+api | jq '{mode: .state.mode, summary, validators: [.state.validators[] | {name,status,nodeId,az}]}'

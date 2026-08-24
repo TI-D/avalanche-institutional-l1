@@ -1,3 +1,5 @@
+# Unvalidated skeleton. Jump SG has no host. One NAT in one AZ.
+# Isolated subnets are unused. See docs/aws-kit-gaps.md.
 terraform {
   required_version = ">= 1.6.0"
   required_providers {

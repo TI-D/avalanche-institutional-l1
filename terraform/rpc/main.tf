@@ -1,3 +1,5 @@
+# Unvalidated skeleton. Internal NLB has no listener, target group, or
+# attachments. See docs/aws-kit-gaps.md. Do not apply as a working RPC path.
 terraform {
   required_version = ">= 1.6.0"
   required_providers {

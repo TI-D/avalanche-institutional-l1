@@ -4,9 +4,12 @@ set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 need_cli
 index="${1:-2}"
-echo "List AvalancheGo processes, then stop the one you labeled validator $index."
-pgrep -af avalanchego || true
-echo
-echo "Example: kill \$(pgrep -f 'avalanchego.*data-dir.*node$index')"
-echo "Then: ./scripts/local/health"
-echo "The P-Chain identity must still exist. This is destroy, not remove."
+echo "This script does not guess pids. Fence the old process, then stop it yourself."
+echo "1. Identify the AvalancheGo process for validator $index."
+echo "2. Fence it so the same NodeID cannot return twice."
+echo "3. Stop only that process. Do not call removeValidator."
+echo "4. ./scripts/local/health must show remaining accepted height still moving."
+if ! pgrep -af avalanchego; then
+  echo "No avalanchego process is running. Nothing to kill." >&2
+  exit 1
+fi

@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
-echo "Restoring validator identity from backup (NodeID must not change)"
-if need_jq; then
-  act restore-backup | jq '.state.recovery'
-else
-  act restore-backup
-fi
+need_jq
+echo "Stage 1 model: writing a restore timestamp. Fence a real host before reusing a NodeID."
+act restore-backup | jq '.state.recovery'

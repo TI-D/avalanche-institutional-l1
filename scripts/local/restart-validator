@@ -3,8 +3,7 @@ set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 need_cli
 echo "Restart the same process with the same staking TLS and BLS files."
-echo "avalanche network start will bring the local snapshot back if you stopped the whole network."
+echo "If you stopped the whole network, run: avalanche network start"
 echo "If you killed one process, start that AvalancheGo with the original --data-dir."
-echo "Success: NodeID unchanged, last accepted height catching up."
-avalanche network start || true
+echo "Success is same NodeID plus accepted height catching up, not this script exiting 0."
 avalanche network status

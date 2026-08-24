@@ -6,7 +6,7 @@ need_cli
 
 avalanche blockchain deploy "$northstar" --local
 avalanche blockchain deploy "$settlement" --local
-avalanche interchain relayer start --local || true
+avalanche interchain relayer start --local
 avalanche network status
 
 echo "Local Primary Network + Northstar + Settlement are up."

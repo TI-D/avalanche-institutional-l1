@@ -3,10 +3,13 @@ set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 need_cli
 avalanche network status
-echo
-if [[ -n "${NORTHSTAR_RPC:-}" ]]; then
-  cast block-number --rpc-url "$NORTHSTAR_RPC" || true
+if [[ -z "${NORTHSTAR_RPC:-}" || -z "${SETTLEMENT_RPC:-}" ]]; then
+  echo "NORTHSTAR_RPC and SETTLEMENT_RPC are required. Process list is not chain health." >&2
+  exit 1
 fi
-if [[ -n "${SETTLEMENT_RPC:-}" ]]; then
-  cast block-number --rpc-url "$SETTLEMENT_RPC" || true
+if ! command -v cast >/dev/null 2>&1; then
+  echo "cast is required to read accepted height." >&2
+  exit 1
 fi
+echo "Northstar height: $(cast block-number --rpc-url "$NORTHSTAR_RPC")"
+echo "Settlement height: $(cast block-number --rpc-url "$SETTLEMENT_RPC")"

@@ -1,3 +1,5 @@
+# Unvalidated skeleton. EC2 placeholder plus a disconnected log group.
+# No Prometheus, Grafana, or alerts. See docs/aws-kit-gaps.md.
 terraform {
   required_version = ">= 1.6.0"
   required_providers {

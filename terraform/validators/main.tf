@@ -1,3 +1,5 @@
+# Unvalidated skeleton. Shared instance role can read every backup object.
+# See docs/aws-kit-gaps.md.
 terraform {
   required_version = ">= 1.6.0"
   required_providers {
