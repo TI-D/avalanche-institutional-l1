@@ -29,7 +29,7 @@ export function Acronym({
         render={
           <abbr
             className={cn(
-              "cursor-help decoration-from-font underline decoration-dotted decoration-[#E84142]/70 underline-offset-4",
+              "cursor-help underline decoration-dotted decoration-white underline-offset-4",
               className
             )}
             title=""
