@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { AvalancheMark } from "@/components/avalanche-mark";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { nav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -42,14 +42,15 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button render={<Link href="/status" />} className="hidden sm:inline-flex">
+          <Link href="/status" className={cn(buttonVariants(), "hidden sm:inline-flex")}>
             Open console
-          </Button>
+          </Link>
           <Sheet>
-            <SheetTrigger className="lg:hidden">
-              <Button variant="outline" size="icon" aria-label="Open menu">
-                <Menu className="size-4" />
-              </Button>
+            <SheetTrigger
+              aria-label="Open menu"
+              className={cn(buttonVariants({ variant: "outline", size: "icon" }), "lg:hidden")}
+            >
+              <Menu className="size-4" />
             </SheetTrigger>
             <SheetContent side="right" className="bg-[#0b0b0d]">
               <SheetHeader>

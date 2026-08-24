@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArchitectureDiagram } from "@/components/architecture-diagram";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const proofs = [
   {
@@ -56,12 +57,12 @@ export default function Home() {
           Northstar Capital asked for a private EVM-compatible Avalanche L1 for tokenized financial assets. Validators stay on approved infrastructure. Public exposure is minimized. Operations are auditable. Node failure is recoverable. The network talks to another Avalanche chain.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button render={<Link href="/status" />} size="lg">
+          <Link href="/status" className={cn(buttonVariants({ size: "lg" }))}>
             Open the ops console
-          </Button>
-          <Button render={<Link href="/engagement" />} variant="outline" size="lg">
+          </Link>
+          <Link href="/engagement" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
             Read the engagement
-          </Button>
+          </Link>
         </div>
         <dl className="mt-12 grid gap-4 sm:grid-cols-4">
           {[
@@ -86,9 +87,9 @@ export default function Home() {
               Not a token, NFT, or DeFi app. Validator infrastructure, isolation, observability, and ICM.
             </p>
           </div>
-          <Button render={<Link href="/architecture" />} variant="ghost">
+          <Link href="/architecture" className={cn(buttonVariants({ variant: "ghost" }))}>
             Full topology
-          </Button>
+          </Link>
         </div>
         <ArchitectureDiagram />
       </section>
@@ -123,10 +124,12 @@ export default function Home() {
             Northstar was the customer. The kit is the product. Once the deployment worked, the customer-specific pieces stayed in the case study, and the repeatable pieces became Terraform, Ansible, contracts, scripts, and runbooks.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button render={<Link href="/kit" />}>See the deployment kit</Button>
-            <Button render={<Link href="/readiness" />} variant="outline">
+            <Link href="/kit" className={cn(buttonVariants())}>
+              See the deployment kit
+            </Link>
+            <Link href="/readiness" className={cn(buttonVariants({ variant: "outline" }))}>
               Implemented vs designed
-            </Button>
+            </Link>
           </div>
         </div>
       </section>
