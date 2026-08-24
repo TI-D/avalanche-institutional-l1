@@ -1,4 +1,9 @@
-.PHONY: check frontend-check contracts-check fmt-check
+.PHONY: bootstrap check frontend-check contracts-check fmt-check local-up live-health
+
+bootstrap:
+	npm ci
+	@command -v forge >/dev/null || (echo "Foundry (forge) is required. https://book.getfoundry.sh/getting-started/installation" && exit 1)
+	@command -v avalanche >/dev/null || echo "avalanche-cli is not installed. Needed for make local-up. See docs/stage-2-local.md"
 
 check: frontend-check contracts-check
 
@@ -14,3 +19,10 @@ contracts-check:
 
 fmt-check:
 	terraform fmt -check -recursive terraform
+
+local-up:
+	./scripts/local/create-l1s
+	./scripts/local/up
+
+live-health:
+	./scripts/local/health

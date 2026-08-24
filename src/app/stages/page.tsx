@@ -19,11 +19,11 @@ const stages = [
   },
   {
     n: "02",
-    status: "Next",
+    status: "Next. Zero-cost. This is the showcase.",
     title: "Real local AvalancheGo network",
-    cost: "CPU, RAM, disk. No AWS. No AVAX.",
-    body: "Avalanche-CLI boots a local Primary Network, deploys Northstar and Settlement as PoA L1s, starts the ICM relayer, and lets you add a validator through the real P-Chain path.",
-    proof: "eth_blockNumber moves. AssetApproved lands on Settlement. Kill a process, same NodeID comes back.",
+    cost: "This machine. No AWS. No AVAX. No HSM.",
+    body: "Avalanche-CLI boots a local Primary Network, deploys Northstar and Settlement as PoA L1s, starts the ICM relayer, and drives ValidatorManager on the real P-Chain. Institutional boundaries (mTLS, remote signer, isolated backup) are emulated locally later and never labeled AWS or HSM.",
+    proof: "make local-up && make live-health shows two advancing chain heights. Evidence lands in evidence/runs/.",
     href: "/stages#stage-2",
     cta: "Read the local runbook",
   },
@@ -46,9 +46,9 @@ export default function StagesPage() {
       title="Stage 1 is a model. Stage 2 is a local chain. Stage 3 is the live plan."
       lede="I will not collapse these. A working website is not a working L1. A working local L1 is not a bank deployment. The value of the portfolio is that the seams are visible."
       evidence={{
-        level: "modeled",
-        title: "Stage 2 scripts exist. They have not been executed here.",
-        note: "Do not treat the Stage 1 console as a substitute for avalanche network status and eth_blockNumber.",
+        level: "source-written",
+        title: "Stage 2 is the next real work. It has not produced evidence yet.",
+        note: "CLAIMS.md is the index. A missing evidence/runs directory is honest. A Passed row without a run is not.",
       }}
     >
       <div className="grid gap-4">

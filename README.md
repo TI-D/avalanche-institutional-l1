@@ -34,10 +34,11 @@ npm run dev
 ## Check
 
 ```bash
+make bootstrap
 make check
 ```
 
-Requires Node 22, Foundry, and a clean install.
+Requires Node 22 and Foundry. `make local-up` additionally needs avalanche-cli. That path has not been executed in this repository. See `CLAIMS.md`.
 
 ## Stage 2 (not executed)
 

@@ -1,23 +1,36 @@
 #!/usr/bin/env bash
 # Stage 2: create Northstar and Settlement L1 configs. Does not deploy.
+# Owner is the public ewoq address. That is a local-test key. Never use it live.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 need_cli
 
-if avalanche blockchain describe "$northstar" >/dev/null 2>&1; then
-  echo "Config $northstar already exists."
-else
-  avalanche blockchain create "$northstar" \
-    --evm --latest --proof-of-authority \
-    --evm-chain-id 431271 --evm-token NSTAR --evm-defaults
-fi
+# Public ewoq address used by Avalanche CLI local/dev tools.
+EWOQ_ADDR="${POA_OWNER:-0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC}"
 
-if avalanche blockchain describe "$settlement" >/dev/null 2>&1; then
-  echo "Config $settlement already exists."
-else
-  avalanche blockchain create "$settlement" \
-    --evm --latest --proof-of-authority \
-    --evm-chain-id 431272 --evm-token SETL --evm-defaults
-fi
+create_one() {
+  local name="$1"
+  local chain_id="$2"
+  local token="$3"
+  if avalanche blockchain describe "$name" >/dev/null 2>&1; then
+    echo "Config $name already exists."
+    return 0
+  fi
+  avalanche blockchain create "$name" \
+    --evm \
+    --latest \
+    --proof-of-authority \
+    --test-defaults \
+    --icm \
+    --evm-chain-id "$chain_id" \
+    --evm-token "$token" \
+    --validator-manager-owner "$EWOQ_ADDR" \
+    --proxy-contract-owner "$EWOQ_ADDR" \
+    --skip-update-check
+}
 
-echo "Configs ready. Next: ./scripts/local/up"
+create_one "$northstar" 431271 NSTAR
+create_one "$settlement" 431272 SETL
+
+echo "Configs ready. PoA owner is ewoq ($EWOQ_ADDR). Local only."
+echo "Next: ./scripts/local/up"

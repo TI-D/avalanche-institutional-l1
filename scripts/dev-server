@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Keep the documentation site up. Preview dies if this process exits.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+# Do not use HOSTNAME. The environment already sets that to the machine name.
+DEV_HOST="${DEV_HOST:-::}"
+DEV_PORT="${DEV_PORT:-43127}"
+
+while true; do
+  echo "dev-server: starting next on [${DEV_HOST}]:${DEV_PORT}"
+  npm run dev || true
+  echo "dev-server: next exited. restarting in 1s."
+  sleep 1
+done
