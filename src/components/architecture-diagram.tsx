@@ -77,10 +77,10 @@ export function ArchitectureDiagram() {
           Source of truth for validators
         </text>
 
-        <text x="460" y="530" textAnchor="middle" fill="#E84142" fontSize="11" fontWeight="600">
+        <text x="460" y="518" textAnchor="middle" fill="#E84142" fontSize="11" fontWeight="600">
           ICM
         </text>
-        <line x1="400" y1="527" x2="520" y2="527" stroke="#E84142" />
+        <line x1="400" y1="532" x2="520" y2="532" stroke="#E84142" />
 
         <rect x="520" y="496" width="240" height="62" rx="12" fill="url(#box)" stroke="#3f3f46" />
         <text x="640" y="522" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">
