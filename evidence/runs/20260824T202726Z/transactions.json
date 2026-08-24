@@ -1,0 +1,50 @@
+{
+  "note": "Local avalanche-cli network. Heights increment when a tx is included. Idle 8s samples did not increment.",
+  "heightAdvance": {
+    "northstarSelfTransfer": "0x4822e121f2b78d939bd2f7ede5484c6d1091de2b2d7cc4eb57522eedf2ca5694",
+    "settlementSelfTransfer": "0x2b689d08e84aed467a24962c533757faa7c28f7456315c171d4e82b828dd7484",
+    "northstarHeight": { "before": 9, "after": 10 },
+    "settlementHeight": { "before": 8, "after": 9 }
+  },
+  "lifecycle": {
+    "nodeId": "NodeID-9tQ7G8jzvFGLGxSh8PuzySYh2pgKdnpg5",
+    "validationId": "j75DnaZ2bVuae68sFU4zXVxRHMxmodp5NiMKvAsAv46f8vwz9",
+    "httpEndpoint": "http://127.0.0.1:65344",
+    "weight": 20,
+    "add": {
+      "registerL1ValidatorTxId": "26nvYesCtZBFPVzCGEXBgmbhFMJfywLzByDyMWYiSvGxFk8Psj"
+    },
+    "remove": {
+      "initiateTxHash": "0x11e61e983265f4894996158a4090a29489fb73f89e9ebff68706c84ba67cc6ab",
+      "setL1ValidatorWeightTxId": "2WrycUE8CC4tTK3QwrwBUZgpY1SFdJYLdwXf7WTbaocViv8QFh"
+    },
+    "note": "CLI addValidator needs a running signature-aggregator on 127.0.0.1:9092/aggregate-signatures. avalanche interchain signatureAggregator start dies; the binary was started from ~/.avalanche-cli/bin/signature-aggregator."
+  },
+  "icm": {
+    "registry": "0x55a4eDd8A2c051079b426E9fbdEe285368824a89",
+    "receiver": "0xA4cD3b0Eb6E5Ab5d8CE4065BcCD70040ADAB1F00",
+    "assetId": 82731,
+    "northstarRegisterTx": "0x9f8aeecec93aa57cc5474a363610741d793cd201c44ac69f2c548adcf8b42780",
+    "northstarSetApprovalTx": "0xa6b8fc0a22d128b58a2cebdd2f6c90a37887f09906103d281f747d0eecfcd35b",
+    "settlementDeliveryTx": "0x13c7b1b0e88e50360558920bcd74e007854bc557bd484d20f2b36357ed2599fa",
+    "warpMessageId": "2GVPmyV3h7C3r1EtvfezfuozZ5T9kFwYcLqaKo2x5Yw2zq5J1q",
+    "teleporterMessageId": "2pAyFkyVKJKEYB4sUXwMixecBbr5BiLvtiWzcHKHs1mbZYu7rv",
+    "note": "avalanche interchain relayer start exited after init. Relayer binary kept running with process-missed-blocks=true delivered ApprovalReceived."
+  },
+  "recovery": {
+    "nodeId": "NodeID-CNhskLG4ridbbTh2rDVjuTNEWfP2cFmwT",
+    "killedPid": 76552,
+    "restartPid": 5006,
+    "preKillHeight": 22,
+    "preKillSettlementHeight": 11,
+    "heightImmediatelyAfterRestore": 22,
+    "postRestoreHeight": 23,
+    "postRestoreSettlementHeight": 11,
+    "postRestoreTx": "0x2ad3650fd04475255123aed97d41e012aa8c4b542316d80a2bb5dfd81215feb1",
+    "preKillAt": "2026-08-24T20:43:28Z",
+    "restoredAt": "2026-08-24T20:43:38Z",
+    "l1StalledWhileDown": true,
+    "sameNodeId": true,
+    "note": "1-of-1 Northstar L1. Killing the only validator stalls that L1. Settlement stayed at 11. Restored from the same flags.json (same TLS/BLS). Not a quorum. Did not use ./scripts/backup."
+  }
+}

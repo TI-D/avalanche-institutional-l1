@@ -1,4 +1,4 @@
-.PHONY: bootstrap check frontend-check contracts-check fmt-check local-up live-health
+.PHONY: bootstrap check frontend-check contracts-check fmt-check local-up live-health lifecycle-test icm-test recovery-test
 
 bootstrap:
 	npm ci
@@ -26,3 +26,16 @@ local-up:
 
 live-health:
 	./scripts/local/health
+
+lifecycle-test:
+	./scripts/local/add-validator
+	@echo "Remove requires NODE_ID of the validator just added."
+	@test -n "$(NODE_ID)" || (echo "Usage: make lifecycle-test NODE_ID=NodeID-..." && exit 1)
+	./scripts/local/remove-validator $(NODE_ID)
+
+icm-test:
+	./scripts/local/deploy-contracts
+	./scripts/local/send-approval
+
+recovery-test:
+	./scripts/local/recovery-drill

@@ -1,0 +1,27 @@
+{
+  "primary": [
+    {
+      "nodeId": "NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg",
+      "endpoint": "http://127.0.0.1:9650",
+      "role": "primary"
+    },
+    {
+      "nodeId": "NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ",
+      "endpoint": "http://127.0.0.1:9652",
+      "role": "primary"
+    }
+  ],
+  "l1": [
+    {
+      "nodeId": "NodeID-CNhskLG4ridbbTh2rDVjuTNEWfP2cFmwT",
+      "endpoint": "http://127.0.0.1:9654",
+      "l1": "northstar"
+    },
+    {
+      "nodeId": "NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w",
+      "endpoint": "http://127.0.0.1:9656",
+      "l1": "settlement"
+    }
+  ],
+  "topologyNote": "CLI default local net: 2 primary nodes plus one extra AvalancheGo per L1. Not a 5-validator quorum. N-1 on a 1-of-1 L1 stalls that L1."
+}

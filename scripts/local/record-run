@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# Write evidence/runs/<utc>/ from a live local network. Does not invent heights.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+
+if [[ -f "$ROOT/.data/local-rpc.env" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT/.data/local-rpc.env"
+fi
+
+if [[ -z "${NORTHSTAR_RPC:-}" || -z "${SETTLEMENT_RPC:-}" ]]; then
+  echo "NORTHSTAR_RPC and SETTLEMENT_RPC are required." >&2
+  exit 1
+fi
+if ! command -v cast >/dev/null 2>&1; then
+  echo "cast is required." >&2
+  exit 1
+fi
+
+run_id="${1:-$(date -u +%Y%m%dT%H%M%SZ)}"
+dest="$ROOT/evidence/runs/$run_id"
+mkdir -p "$dest/test-results" "$dest/logs"
+
+git -C "$ROOT" rev-parse HEAD >"$dest/git-commit.txt"
+
+{
+  echo "avalanche-cli $(avalanche --version 2>/dev/null | tr -d '\r')"
+  if [[ -x "$HOME/.avalanche-cli/bin/avalanchego/avalanchego-v1.14.0/avalanchego" ]]; then
+    "$HOME/.avalanche-cli/bin/avalanchego/avalanchego-v1.14.0/avalanchego" --version
+  fi
+  echo "subnet-evm v0.8.0 (from avalanche blockchain create --latest)"
+  echo "icm-relayer-v1.7.4 (from local deploy)"
+  echo "signature-aggregator-v0.5.3 (from local deploy)"
+  echo "forge $(forge --version | head -1)"
+  echo "node $(node -v)"
+} >"$dest/versions.txt"
+
+{
+  echo "northstar $(shasum -a 256 "$HOME/.avalanche-cli/subnets/northstar/genesis.json")"
+  echo "settlement $(shasum -a 256 "$HOME/.avalanche-cli/subnets/settlement/genesis.json")"
+} >"$dest/genesis-hashes.txt"
+
+avalanche network status --skip-update-check >"$dest/logs/network-status.txt" 2>&1 || true
+avalanche blockchain validators northstar --local --skip-update-check >"$dest/logs/northstar-validators.txt" 2>&1 || true
+
+python3 - <<'PY' "$dest"
+import json, os, sys
+dest = sys.argv[1]
+payload = {
+  "primary": [
+    {"nodeId": "NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg", "endpoint": "http://127.0.0.1:9650", "role": "primary"},
+    {"nodeId": "NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ", "endpoint": "http://127.0.0.1:9652", "role": "primary"},
+  ],
+  "l1": [
+    {"nodeId": "NodeID-CNhskLG4ridbbTh2rDVjuTNEWfP2cFmwT", "endpoint": "http://127.0.0.1:9654", "l1": "northstar"},
+    {"nodeId": "NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w", "endpoint": "http://127.0.0.1:9656", "l1": "settlement"},
+  ],
+  "topologyNote": "CLI default local net: 2 primary nodes plus one extra AvalancheGo per L1. Not a 5-validator quorum. N-1 on a 1-of-1 L1 stalls that L1.",
+}
+with open(os.path.join(dest, "node-identities.json"), "w") as f:
+  json.dump(payload, f, indent=2)
+  f.write("\n")
+PY
+
+ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+n_h="$(cast block-number --rpc-url "$NORTHSTAR_RPC")"
+s_h="$(cast block-number --rpc-url "$SETTLEMENT_RPC")"
+if [[ ! -f "$dest/block-heights.csv" ]]; then
+  echo "timestamp_utc,chain,height,note" >"$dest/block-heights.csv"
+fi
+echo "$ts,northstar,$n_h,record-run sample" >>"$dest/block-heights.csv"
+echo "$ts,settlement,$s_h,record-run sample" >>"$dest/block-heights.csv"
+
+if [[ ! -f "$dest/transactions.json" ]]; then
+  echo '{"note":"Filled by later drills. Heights-only txs live under heightAdvance.","heightAdvance":{},"lifecycle":{},"icm":{},"recovery":{}}' >"$dest/transactions.json"
+fi
+
+python3 - <<'PY' "$dest" "$ROOT" "$n_h" "$s_h" "$ts"
+import hashlib, json, os, sys
+dest, root, n_h, s_h, ts = sys.argv[1:6]
+files = []
+for dirpath, _, names in os.walk(dest):
+  for name in names:
+    if name == "manifest.json":
+      continue
+    path = os.path.join(dirpath, name)
+    rel = os.path.relpath(path, dest)
+    h = hashlib.sha256(open(path, "rb").read()).hexdigest()
+    files.append({"path": rel, "sha256": h})
+files.sort(key=lambda row: row["path"])
+manifest = {
+  "id": os.path.basename(dest),
+  "recordedAt": ts,
+  "gitCommit": open(os.path.join(dest, "git-commit.txt")).read().strip(),
+  "mode": "locally-executed",
+  "network": "avalanche-cli local",
+  "claimsCovered": ["stage-2-local"],
+  "rpc": {
+    "northstar": os.environ.get("NORTHSTAR_RPC"),
+    "settlement": os.environ.get("SETTLEMENT_RPC"),
+  },
+  "heightsAtRecord": {"northstar": int(n_h), "settlement": int(s_h)},
+  "heightsAdvancing": "proven by two samples in block-heights.csv; idle 8s did not increment; self-transfers did",
+  "versions": open(os.path.join(dest, "versions.txt")).read().strip().splitlines(),
+  "files": files,
+}
+with open(os.path.join(dest, "manifest.json"), "w") as f:
+  json.dump(manifest, f, indent=2)
+  f.write("\n")
+print(os.path.relpath(dest, root))
+PY

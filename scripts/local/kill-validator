@@ -8,7 +8,7 @@ echo "This script does not guess pids. Fence the old process, then stop it yours
 echo "1. Identify the AvalancheGo process for validator $index."
 echo "2. Fence it so the same NodeID cannot return twice."
 echo "3. Stop only that process. Do not call removeValidator."
-echo "4. ./scripts/local/health must show remaining accepted height still moving."
+echo "4. This topology is 1-of-1 per L1. Killing the Northstar validator stalls that L1. Settlement can still answer."
 if ! pgrep -af avalanchego; then
   echo "No avalanchego process is running. Nothing to kill." >&2
   exit 1

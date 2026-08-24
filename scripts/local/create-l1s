@@ -12,7 +12,7 @@ create_one() {
   local name="$1"
   local chain_id="$2"
   local token="$3"
-  if avalanche blockchain describe "$name" >/dev/null 2>&1; then
+  if avalanche blockchain list 2>/dev/null | grep -Fqw "$name"; then
     echo "Config $name already exists."
     return 0
   fi

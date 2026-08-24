@@ -7,5 +7,11 @@ if [[ -z "${1:-}" && -z "${NODE_ID:-}" ]]; then
   echo "Usage: ./scripts/local/remove-validator NodeID-..."
   exit 1
 fi
-avalanche blockchain removeValidator "$northstar" --local --node-id "${1:-$NODE_ID}"
-avalanche blockchain validators "$northstar" --local
+AGG="${SIGNATURE_AGGREGATOR_ENDPOINT:-http://127.0.0.1:9092/aggregate-signatures}"
+avalanche blockchain removeValidator "$northstar" --local \
+  --node-id "${1:-$NODE_ID}" \
+  --key ewoq \
+  --staker-key ewoq \
+  --signature-aggregator-endpoint "$AGG" \
+  --skip-update-check
+avalanche blockchain validators "$northstar" --local --skip-update-check

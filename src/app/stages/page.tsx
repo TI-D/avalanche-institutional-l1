@@ -19,7 +19,7 @@ const stages = [
   },
   {
     n: "02",
-    status: "Next. Zero-cost. This is the showcase.",
+    status: "Locally executed: heights, add/remove, ICM receipt, same-NodeID restore.",
     title: "Real local AvalancheGo network",
     cost: "This machine. No AWS. No AVAX. No HSM.",
     body: "Avalanche-CLI boots a local Primary Network, deploys Northstar and Settlement as PoA L1s, starts the ICM relayer, and drives ValidatorManager on the real P-Chain. Institutional boundaries (mTLS, remote signer, isolated backup) are emulated locally later and never labeled AWS or HSM.",
@@ -47,8 +47,8 @@ export default function StagesPage() {
       lede="I will not collapse these. A working website is not a working L1. A working local L1 is not a bank deployment. The value of the portfolio is that the seams are visible."
       evidence={{
         level: "source-written",
-        title: "Stage 2 is the next real work. It has not produced evidence yet.",
-        note: "CLAIMS.md is the index. A missing evidence/runs directory is honest. A Passed row without a run is not.",
+        title: "Local heights and NodeIDs are in evidence/runs/20260824T202726Z.",
+        note: "CLI default is 2 primary nodes plus one AvalancheGo per L1. That is not a 5-validator quorum. Kill of the Northstar validator stalls that L1.",
       }}
     >
       <div className="grid gap-4">

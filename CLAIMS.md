@@ -9,11 +9,11 @@ This file is the human-readable index. `/readiness` renders the same levels. A r
 | Documentation site renders | locally-executed | `npm ci && npm run build` | this repository | Not Avalanche infrastructure |
 | Stage 1 ops console | modeled | `./scripts/health` against `:43127` | `src/lib/control-plane.ts` | JSON only. No AvalancheGo |
 | ValidatorManager lifecycle write-up | source-written | read `docs/validator-lifecycle.md` | that file | No P-Chain transactions |
-| ICM origin authorization | source-written | `forge test --root contracts` | `contracts/test/` | Not deployed to an L1 |
-| Local Northstar + Settlement L1s | source-written | `make local-up && make live-health` | none | Not booted in this repo |
-| Validator add/remove on P-Chain | source-written | `make lifecycle-test` | none | CLI wrapper unrun |
-| ICM AssetApproved delivery | source-written | `make icm-test` | none | No Teleporter receipt |
-| Host-failure restore, same NodeID | modeled | `make recovery-test` | none | Stage 1 stamps JSON |
+| ICM origin authorization | locally-executed | `forge test --root contracts` and `make icm-test` | `evidence/runs/20260824T202726Z/transactions.json` | Foundry still covers auth. Delivery required a long-lived icm-relayer process, not `avalanche interchain relayer start`. |
+| Local Northstar + Settlement L1s | locally-executed | `make local-up && make live-health` | `evidence/runs/20260824T202726Z/manifest.json` | CLI default: 2 primary + 1 AvalancheGo per L1. Heights increment on tx, not idle 8s. Not a 5-validator quorum. |
+| Validator add/remove on P-Chain | locally-executed | `make lifecycle-test NODE_ID=...` | `evidence/runs/20260824T202726Z/transactions.json` | Needs a live signature-aggregator at 127.0.0.1:9092. CLI `signatureAggregator start` did not stay up. |
+| ICM AssetApproved delivery | locally-executed | `make icm-test` | `evidence/runs/20260824T202726Z/transactions.json` | Relayer must stay running. First 120s wait failed because CLI start died. |
+| Host-failure restore, same NodeID | locally-executed | `make recovery-test` | `evidence/runs/20260824T202726Z/transactions.json` | 1-of-1: kill stalls that L1. Restored NodeID-CNhskLG4ridbbTh2rDVjuTNEWfP2cFmwT. Not a quorum. |
 | Remote BLS signer prototype | source-written | signer tests | none | Not HSM-backed |
 | Restricted peers + mTLS RPC | source-written | `make network-policy-test` | none | Not AWS security groups |
 | Prometheus/Grafana/Loki | source-written | alert during a drill | none | No scrape pipeline |
@@ -36,7 +36,7 @@ This file is the human-readable index. `/readiness` renders the same levels. A r
 
 Sprint 1 (this commit family): trustworthiness. Mostly done.
 
-Sprint 2: real local Primary Network, Northstar, Settlement, live console. **Next.**
+Sprint 2: real local Primary Network, Northstar, Settlement, live console. Done for heights. See `evidence/runs/20260824T202726Z/`.
 
 Sprint 3: real validator lifecycle + resumable operator path.
 

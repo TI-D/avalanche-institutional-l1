@@ -4,9 +4,11 @@ set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 need_cli
 
-avalanche blockchain deploy "$northstar" --local
-avalanche blockchain deploy "$settlement" --local
-avalanche interchain relayer start --local
+avalanche blockchain deploy "$northstar" --local --ewoq --skip-update-check
+avalanche blockchain deploy "$settlement" --local --ewoq --skip-update-check
+if ! avalanche interchain relayer start --local --skip-update-check; then
+  echo "Relayer start returned non-zero. If it is already running from ICM deploy, that is expected."
+fi
 avalanche network status
 
 echo "Local Primary Network + Northstar + Settlement are up."

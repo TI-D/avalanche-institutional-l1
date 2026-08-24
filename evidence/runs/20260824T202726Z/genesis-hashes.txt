@@ -1,0 +1,2 @@
+northstar 00c8bc56675e98896a31c419b542e7a98c1f9cdcf6be5ba869179827121be014  /Users/trueindustries/.avalanche-cli/subnets/northstar/genesis.json
+settlement 62450748c74cec333b51d1da1defed0c307ae16940eab48dc551940848e6364e  /Users/trueindustries/.avalanche-cli/subnets/settlement/genesis.json

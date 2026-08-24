@@ -26,20 +26,23 @@ fi
 
 deployer=$(cast wallet address --private-key "$ADMIN_KEY")
 nonce=$(cast nonce "$deployer" --rpc-url "$NORTHSTAR_RPC")
-predicted_registry=$(cast compute-address "$deployer" --nonce "$nonce")
+predicted_registry=$(cast compute-address "$deployer" --nonce "$nonce" | awk '{print $NF}')
 echo "Predicted InstitutionalRegistry on Northstar: $predicted_registry (nonce $nonce)"
 
+# Foundry 1.7: --broadcast is required to send. --json after --constructor-args is eaten as an extra arg.
 receiver=$(forge create --root "$ROOT/contracts" src/SettlementReceiver.sol:SettlementReceiver \
+  --broadcast --json \
   --rpc-url "$SETTLEMENT_RPC" \
   --private-key "$ADMIN_KEY" \
   --constructor-args "$TELEPORTER" "$NORTHSTAR_BLOCKCHAIN_ID" "$predicted_registry" \
-  --json | jq -r '.deployedTo')
+  | jq -r 'select(.deployedTo != null) | .deployedTo')
 
 registry=$(forge create --root "$ROOT/contracts" src/InstitutionalRegistry.sol:InstitutionalRegistry \
+  --broadcast --json \
   --rpc-url "$NORTHSTAR_RPC" \
   --private-key "$ADMIN_KEY" \
   --constructor-args "$TELEPORTER" "$SETTLEMENT_BLOCKCHAIN_ID" "$receiver" "$ADMIN_ADDRESS" "$RELAYER" \
-  --json | jq -r '.deployedTo')
+  | jq -r 'select(.deployedTo != null) | .deployedTo')
 
 if [[ "$registry" != "$predicted_registry" ]]; then
   echo "Registry landed at $registry, predicted $predicted_registry. Receiver will reject this origin. Aborting." >&2

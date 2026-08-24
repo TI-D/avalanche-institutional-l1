@@ -12,10 +12,10 @@ Official path: [Deploy locally](https://build.avax.network/docs/tooling/avalanch
 2. Northstar L1 and Settlement L1 both accept EVM RPC.
 3. `InstitutionalRegistry.setApproval(82731, true)` on Northstar produces `ApprovalReceived` on Settlement.
 4. `avalanche blockchain addValidator northstar --local` adds a fourth validator through PoAManager / P-Chain.
-5. Killing one local validator process leaves the L1 finalizing. Restarting it restores the same NodeID.
-6. The ops console reads live health from the local RPC instead of `/tmp/northstar-control-plane.json`.
+5. Killing the single Northstar AvalancheGo stalls that 1-of-1 L1. Restarting the same flags.json restores the same NodeID. This is not a quorum.
+6. The local ops console reads live health from RPC. Vercel `/status` stays model-only.
 
-Until those six are green, Stage 1 remains the demo. This repository has not produced that evidence.
+Evidence for 1-5 is in `evidence/runs/20260824T202726Z/`. Item 6 is local-only.
 
 ## Machine
 
@@ -55,20 +55,30 @@ export PATH="$HOME/bin:$PATH"
 NORTHSTAR_RPC=http://127.0.0.1:<port>/ext/bc/<NORTHSTAR_CHAIN_ID>/rpc npm run dev
 ```
 
-`./scripts/local/up` is a wrapper around:
+`./scripts/local/create-l1s` and `./scripts/local/up` are wrappers around the flags that actually worked on avalanche-cli 1.9.6:
 
 ```bash
 avalanche blockchain create northstar \
   --evm --latest --proof-of-authority \
-  --evm-chain-id 431271 --evm-token NSTAR --evm-defaults
+  --test-defaults --icm \
+  --evm-chain-id 431271 --evm-token NSTAR \
+  --validator-manager-owner 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC \
+  --proxy-contract-owner 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC \
+  --skip-update-check
 
 avalanche blockchain create settlement \
   --evm --latest --proof-of-authority \
-  --evm-chain-id 431272 --evm-token SETL --evm-defaults
+  --test-defaults --icm \
+  --evm-chain-id 431272 --evm-token SETL \
+  --validator-manager-owner 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC \
+  --proxy-contract-owner 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC \
+  --skip-update-check
 
-avalanche blockchain deploy northstar --local
-avalanche blockchain deploy settlement --local
+avalanche blockchain deploy northstar --local --ewoq --skip-update-check
+avalanche blockchain deploy settlement --local --ewoq --skip-update-check
 ```
+
+`--evm-defaults` is gone. `avalanche blockchain describe` exits 0 even when the name is missing; create-l1s checks `avalanche blockchain list`. Deploy with `--icm` starts the relayer; a second `relayer start` is expected to say it is already running.
 
 CLI will download AvalancheGo and Subnet-EVM, start the local P/C-Chain validators, convert each Subnet to an L1, initialize ValidatorManager, deploy TeleporterMessenger / TeleporterRegistry, and start the ICM relayer.
 

@@ -10,9 +10,9 @@ These are the versions this repo intends to use. They are not evidence that thos
 | Solidity | 0.8.25 | contracts/foundry.toml (matches official ICM pragma) |
 | Foundry solc | 0.8.25 | contracts/foundry.toml |
 | forge-std | 9b91af55d5944be8fb986e6cb7cde7ad2d01b890 | contracts/lib/forge-std |
-| AvalancheGo | 1.13.5 | ansible/avalanchego/tasks/main.yml (download not checksummed, never run) |
+| AvalancheGo | 1.14.0 commit dce38e90b1542fafa3c2b8efa8ef864d7a370eb6 | evidence/runs/20260824T202726Z/versions.txt (local boot). ansible/avalanchego still pins 1.13.5, unchecksummed, never run |
 | Terraform | >= 1.6.0, AWS provider ~> 5.80 | terraform modules (never applied) |
-| Avalanche CLI | unpinned | scripts/local/lib.sh install hint |
+| Avalanche CLI | 1.9.6 | evidence/runs/20260824T202726Z/versions.txt |
+| Subnet-EVM | v0.8.0 | local `avalanche blockchain create --latest` |
+| ICM relayer | icm-relayer-v1.7.4 | started by local deploy |
 | ICM contracts | interface shape fetched 2026-08-24 from ava-labs/icm-contracts main | contracts/src/interfaces/ |
-
-Stage 2 must replace "unpinned Avalanche CLI" and "interface shape" with exact CLI, AvalancheGo, Subnet-EVM, and icm-contracts commit hashes from a successful local boot.

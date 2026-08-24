@@ -1,0 +1,65 @@
+{
+  "id": "20260824T202726Z",
+  "recordedAt": "2026-08-24T20:43:38Z",
+  "gitCommit": "e412bcb188bd5ece58511f38865891fe0f1ae7bf",
+  "mode": "locally-executed",
+  "network": "avalanche-cli local",
+  "claimsCovered": [
+    "stage-2-local",
+    "validator-lifecycle",
+    "icm-contracts",
+    "recovery-drill"
+  ],
+  "rpc": {
+    "northstar": "http://127.0.0.1:9654/ext/bc/2DX5Pd6zzSsHeqDCAvuDUeLAsVu5aKeLXXckuCXj2B5F13m8AQ/rpc",
+    "settlement": "http://127.0.0.1:9656/ext/bc/tNyQpowhpZZ543tbgmVARz5Tc5dVHWRP8PUgw531dXSYdmmJ2/rpc"
+  },
+  "heightsAtRecord": {
+    "northstar": 23,
+    "settlement": 11
+  },
+  "heightsAdvancing": "proven by two samples in block-heights.csv; idle 8s did not increment; self-transfers did",
+  "versions": [
+    "avalanche-cli avalanche version 1.9.6",
+    "avalanchego/1.14.0 [database=v1.4.5, rpcchainvm=44, commit=dce38e90b1542fafa3c2b8efa8ef864d7a370eb6, go=1.24.9]",
+    "subnet-evm v0.8.0 (from avalanche blockchain create --latest)",
+    "icm-relayer-v1.7.4 (from local deploy)",
+    "signature-aggregator-v0.5.3 (from local deploy)",
+    "forge forge Version: 1.7.1",
+    "node v22.23.2"
+  ],
+  "files": [
+    {
+      "path": "block-heights.csv",
+      "sha256": "72e88aad3923d4a2eb6e1f17320e8ad72ae0fd13ea8d5f378cd5a1edbf3583a1"
+    },
+    {
+      "path": "genesis-hashes.txt",
+      "sha256": "dc62c41ec193fee0a9d8d5fc76c0d612c0708e4358eaef9d4bace95eb9b5beee"
+    },
+    {
+      "path": "git-commit.txt",
+      "sha256": "425730b6249ac69b195683202703eb22cfb673abad511e0de6a219522f4ecfa0"
+    },
+    {
+      "path": "logs/network-status.txt",
+      "sha256": "c19c645fac037337169b73363f367305424aa09bc3f9202fd50a8642a06c275c"
+    },
+    {
+      "path": "logs/northstar-validators.txt",
+      "sha256": "59e456939b3ad975dc19cd35197f514d8c1de6636f39f2418e737fb4b5c8c490"
+    },
+    {
+      "path": "node-identities.json",
+      "sha256": "cc1168b1045b16c0d0a274f0b622c79a3bdffc59a0d4fe352b18a740c8da925b"
+    },
+    {
+      "path": "transactions.json",
+      "sha256": "0e6d3c70bf8b688de39ad061eab5f6d45c00da3373c7cfe481361805f143903d"
+    },
+    {
+      "path": "versions.txt",
+      "sha256": "250c28078d211e7e76e458f9453f6ab674fa3d5e6a85cf00953cfc85ca394f3a"
+    }
+  ]
+}

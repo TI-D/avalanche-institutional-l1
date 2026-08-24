@@ -1,0 +1,15 @@
+timestamp_utc,chain,height,note
+2026-08-24T20:26:24Z,northstar,9,idle sample 1
+2026-08-24T20:26:32Z,northstar,9,idle sample 2 after 8s; no increment
+2026-08-24T20:26:24Z,settlement,8,idle sample 1
+2026-08-24T20:26:32Z,settlement,8,idle sample 2 after 8s; no increment
+2026-08-24T20:26:57Z,northstar,10,after 0-value self-transfer 0x4822e121f2b78d939bd2f7ede5484c6d1091de2b2d7cc4eb57522eedf2ca5694
+2026-08-24T20:26:57Z,settlement,9,after 0-value self-transfer 0x2b689d08e84aed467a24962c533757faa7c28f7456315c171d4e82b828dd7484
+2026-08-24T20:27:05Z,northstar,10,post-tx idle 8s; no further increment
+2026-08-24T20:27:05Z,settlement,9,post-tx idle 8s; no further increment
+2026-08-24T20:27:52Z,northstar,10,record-run sample
+2026-08-24T20:27:52Z,settlement,9,record-run sample
+2026-08-24T20:43:28Z,northstar,22,recovery pre-kill
+2026-08-24T20:43:28Z,settlement,11,recovery pre-kill
+2026-08-24T20:43:38Z,northstar,23,recovery after restore + self-transfer 0x2ad3650fd04475255123aed97d41e012aa8c4b542316d80a2bb5dfd81215feb1
+2026-08-24T20:43:38Z,settlement,11,recovery settlement unchanged while northstar was down

@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# Fence, kill the bootstrap Northstar AvalancheGo, confirm the 1-of-1 L1 stalls, restore the same flags.json.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+
+if [[ -f "$ROOT/.data/local-rpc.env" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT/.data/local-rpc.env"
+fi
+if [[ -z "${NORTHSTAR_RPC:-}" || -z "${SETTLEMENT_RPC:-}" ]]; then
+  echo "NORTHSTAR_RPC and SETTLEMENT_RPC are required." >&2
+  exit 1
+fi
+if [[ -z "${ADMIN_ADDRESS:-}" || -z "${ADMIN_KEY:-}" ]]; then
+  echo "ADMIN_ADDRESS and ADMIN_KEY are required for the post-restore tx." >&2
+  exit 1
+fi
+if ! command -v cast >/dev/null 2>&1; then
+  echo "cast is required." >&2
+  exit 1
+fi
+
+EXPECTED_NODE="${NORTHSTAR_NODE_ID:-NodeID-CNhskLG4ridbbTh2rDVjuTNEWfP2cFmwT}"
+BIN="$HOME/.avalanche-cli/bin/avalanchego/avalanchego-v1.14.0/avalanchego"
+PID="$(lsof -nP -iTCP:9654 -sTCP:LISTEN -t | head -1 || true)"
+if [[ -z "$PID" ]]; then
+  echo "No listener on 9654." >&2
+  exit 1
+fi
+ARGS="$(ps -p "$PID" -o args=)"
+if ! echo "$ARGS" | grep -F "$EXPECTED_NODE" >/dev/null; then
+  echo "FENCE FAIL: pid $PID is not $EXPECTED_NODE" >&2
+  exit 1
+fi
+LISTENERS="$(lsof -nP -iTCP:9654 -sTCP:LISTEN -t | wc -l | tr -d ' ')"
+if [[ "$LISTENERS" -ne 1 ]]; then
+  echo "FENCE FAIL: $LISTENERS listeners on 9654" >&2
+  exit 1
+fi
+FLAGS="$(echo "$ARGS" | awk '{for (i=1;i<=NF;i++) if ($i=="--config-file") print $(i+1)}')"
+if [[ -z "$FLAGS" || ! -f "$FLAGS" ]]; then
+  echo "Could not resolve --config-file from pid $PID" >&2
+  exit 1
+fi
+
+PRE_H="$(cast block-number --rpc-url "$NORTHSTAR_RPC")"
+PRE_S="$(cast block-number --rpc-url "$SETTLEMENT_RPC")"
+echo "fence_ok pid=$PID node=$EXPECTED_NODE pre_kill_northstar=$PRE_H settlement=$PRE_S"
+
+kill "$PID"
+for _ in $(seq 1 20); do
+  if ! kill -0 "$PID" 2>/dev/null; then
+    break
+  fi
+  sleep 1
+done
+if kill -0 "$PID" 2>/dev/null; then
+  kill -9 "$PID" || true
+  sleep 1
+fi
+
+if curl -sS --max-time 2 -X POST --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' -H 'content-type: application/json' "$NORTHSTAR_RPC"; then
+  echo
+  echo "UNEXPECTED: northstar RPC still answered" >&2
+  exit 1
+fi
+echo "northstar_rpc_down=yes (1-of-1 L1 stalled)"
+echo "settlement_during_down=$(cast block-number --rpc-url "$SETTLEMENT_RPC")"
+sleep 8
+if curl -sS --max-time 2 -X POST --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' -H 'content-type: application/json' "$NORTHSTAR_RPC"; then
+  echo
+  echo "UNEXPECTED: northstar RPC recovered without restart" >&2
+  exit 1
+fi
+
+if lsof -nP -iTCP:9654 -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "FENCE FAIL: 9654 already bound" >&2
+  exit 1
+fi
+nohup "$BIN" --config-file "$FLAGS" >/dev/null 2>&1 &
+NEW_PID=$!
+
+UP=0
+for i in $(seq 1 90); do
+  if POST_H="$(cast block-number --rpc-url "$NORTHSTAR_RPC" 2>/dev/null)"; then
+    echo "rpc_up_after_${i}s height=$POST_H"
+    UP=1
+    break
+  fi
+  sleep 1
+done
+if [[ "$UP" -ne 1 ]]; then
+  echo "RPC did not come back in 90s" >&2
+  exit 1
+fi
+
+AFTER_ID="$(curl -sS -X POST --data '{"jsonrpc":"2.0","id":1,"method":"info.getNodeID"}' -H 'content-type: application/json' http://127.0.0.1:9654/ext/info | python3 -c "import json,sys; print(json.load(sys.stdin)['result']['nodeID'])")"
+if [[ "$AFTER_ID" != "$EXPECTED_NODE" ]]; then
+  echo "NodeID mismatch: $AFTER_ID" >&2
+  exit 1
+fi
+
+TX_OUT="$(cast send "$ADMIN_ADDRESS" --value 0 --private-key "$ADMIN_KEY" --rpc-url "$NORTHSTAR_RPC" --json)"
+TXH="$(echo "$TX_OUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('transactionHash') or d.get('hash') or '')")"
+FINAL_H="$(cast block-number --rpc-url "$NORTHSTAR_RPC")"
+echo "same_nodeid=yes restart_pid=$NEW_PID tx=$TXH height=$PRE_H->$FINAL_H"

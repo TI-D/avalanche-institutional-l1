@@ -3,5 +3,19 @@
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 need_cli
-avalanche blockchain addValidator "$northstar" --local "$@"
-avalanche blockchain validators "$northstar" --local
+P_EWOQ="${P_EWOQ:-P-custom18jma8ppw3nhx5r4ap8clazz0dps7rv5u9xde7p}"
+AGG="${SIGNATURE_AGGREGATOR_ENDPOINT:-http://127.0.0.1:9092/aggregate-signatures}"
+if [[ "$#" -eq 0 ]]; then
+  avalanche blockchain addValidator "$northstar" --local \
+    --create-local-validator \
+    --ewoq \
+    --weight 20 \
+    --balance 1 \
+    --remaining-balance-owner "$P_EWOQ" \
+    --disable-owner "$P_EWOQ" \
+    --signature-aggregator-endpoint "$AGG" \
+    --skip-update-check
+else
+  avalanche blockchain addValidator "$northstar" --local "$@"
+fi
+avalanche blockchain validators "$northstar" --local --skip-update-check

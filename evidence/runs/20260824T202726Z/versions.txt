@@ -1,0 +1,7 @@
+avalanche-cli avalanche version 1.9.6
+avalanchego/1.14.0 [database=v1.4.5, rpcchainvm=44, commit=dce38e90b1542fafa3c2b8efa8ef864d7a370eb6, go=1.24.9]
+subnet-evm v0.8.0 (from avalanche blockchain create --latest)
+icm-relayer-v1.7.4 (from local deploy)
+signature-aggregator-v0.5.3 (from local deploy)
+forge forge Version: 1.7.1
+node v22.23.2
