@@ -22,7 +22,7 @@ export function DocPage({
         <WithAcronyms>{kicker}</WithAcronyms>
       </p>
       <h1 className="mt-3 max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-        <WithAcronyms>{title}</WithAcronyms>
+        <WithAcronyms underline={false}>{title}</WithAcronyms>
       </h1>
       <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-400 sm:text-lg">
         <WithAcronyms>{lede}</WithAcronyms>

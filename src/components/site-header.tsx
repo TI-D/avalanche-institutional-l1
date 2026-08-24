@@ -20,7 +20,7 @@ export function SiteHeader() {
           <AvalancheMark className="size-7" />
           <div className="leading-tight">
             <div className="text-[13px] font-semibold tracking-tight">
-              Northstar <Acronym term="L1" />
+              Northstar <Acronym term="L1" underline={false} />
             </div>
             <div className="text-[11px] text-muted-foreground">Institutional Avalanche Reference</div>
           </div>
@@ -58,7 +58,7 @@ export function SiteHeader() {
             <SheetContent side="right" className="bg-[#0b0b0d]">
               <SheetHeader>
                 <SheetTitle>
-                  Northstar <Acronym term="L1" />
+                  Northstar <Acronym term="L1" underline={false} />
                 </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-1 px-4">

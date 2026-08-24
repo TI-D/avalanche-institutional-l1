@@ -14,10 +14,12 @@ export function Acronym({
   term,
   children,
   className,
+  underline = true,
 }: {
   term: string;
   children?: ReactNode;
   className?: string;
+  underline?: boolean;
 }) {
   const entry = resolveAcronym(term) ?? resolveAcronym(String(children ?? ""));
   const label = children ?? term;
@@ -29,7 +31,10 @@ export function Acronym({
         render={
           <abbr
             className={cn(
-              "cursor-help underline decoration-dotted decoration-white underline-offset-4",
+              "cursor-help",
+              underline
+                ? "underline decoration-dotted decoration-white underline-offset-4"
+                : "no-underline",
               className
             )}
             title=""
@@ -61,10 +66,16 @@ export function Acronym({
 
 const SKIP = new Set(["code", "pre", "svg", "path", "abbr"]);
 
-export function WithAcronyms({ children }: { children: ReactNode }): ReactNode {
+export function WithAcronyms({
+  children,
+  underline = true,
+}: {
+  children: ReactNode;
+  underline?: boolean;
+}): ReactNode {
   return Children.map(children, (child) => {
     if (typeof child === "string" || typeof child === "number") {
-      return replaceAcronyms(String(child));
+      return replaceAcronyms(String(child), underline);
     }
     if (!isValidElement<{ children?: ReactNode; className?: string }>(child)) {
       return child;
@@ -73,11 +84,16 @@ export function WithAcronyms({ children }: { children: ReactNode }): ReactNode {
     if (type === Acronym || type === WithAcronyms) return child;
     if (typeof type === "string" && SKIP.has(type)) return child;
     if (child.props.children == null) return child;
-    return cloneElement(child, undefined, <WithAcronyms>{child.props.children}</WithAcronyms>);
+    const nextUnderline = underline && type !== "h1";
+    return cloneElement(
+      child,
+      undefined,
+      <WithAcronyms underline={nextUnderline}>{child.props.children}</WithAcronyms>
+    );
   });
 }
 
-function replaceAcronyms(text: string): ReactNode {
+function replaceAcronyms(text: string, underline = true): ReactNode {
   const parts: ReactNode[] = [];
   let last = 0;
   const pattern = new RegExp(ACRONYM_PATTERN.source, ACRONYM_PATTERN.flags);
@@ -88,7 +104,7 @@ function replaceAcronyms(text: string): ReactNode {
     if (!entry) continue;
     if (index > last) parts.push(text.slice(last, index));
     parts.push(
-      <Acronym key={`${raw}-${index}`} term={entry.term}>
+      <Acronym key={`${raw}-${index}`} term={entry.term} underline={underline}>
         {raw}
       </Acronym>
     );
