@@ -7,6 +7,7 @@ export const nav = [
   { href: "/icm", label: "ICM" },
   { href: "/kit", label: "Kit" },
   { href: "/stages", label: "Stages" },
+  { href: "/readiness", label: "Evidence" },
   { href: "/ops", label: "Runbooks" },
   { href: "/status", label: "Status" },
 ] as const;

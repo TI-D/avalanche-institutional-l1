@@ -1,9 +1,9 @@
 export type ValidatorStatus =
-  | "healthy"
+  | "modeled-up"
   | "registering"
   | "removing"
   | "degraded"
-  | "destroyed"
+  | "modeled-down"
   | "offline";
 
 export type Validator = {
@@ -36,6 +36,7 @@ export type OpsEvent = {
 };
 
 export type ControlPlane = {
+  mode: "stage-1-json-model";
   network: {
     customer: string;
     l1Name: string;
@@ -43,8 +44,8 @@ export type ControlPlane = {
     subnetId: string;
     blockchainId: string;
     latestBlock: number;
-    consensus: "healthy" | "degraded";
-    rpc: "operational" | "degraded" | "down";
+    consensus: "modeled-majority" | "modeled-minority";
+    rpc: "modeled-up" | "modeled-degraded" | "modeled-down";
   };
   validators: Validator[];
   validatorManager: {
@@ -55,14 +56,14 @@ export type ControlPlane = {
   icm: {
     connected: boolean;
     teleporter: string;
-    relayer: "connected" | "degraded";
+    relayer: "modeled";
     lastMessage: IcmMessage | null;
     messages: IcmMessage[];
   };
   recovery: {
     lastBackupAt: string | null;
     lastRestoreAt: string | null;
-    lastFailureDrill: "passed" | "failed" | "not-run";
+    lastFailureDrill: "modeled-restore" | "modeled-down" | "not-run";
   };
   events: OpsEvent[];
 };

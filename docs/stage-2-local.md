@@ -15,7 +15,7 @@ Official path: [Deploy locally](https://build.avax.network/docs/tooling/avalanch
 5. Killing one local validator process leaves the L1 finalizing. Restarting it restores the same NodeID.
 6. The ops console reads live health from the local RPC instead of `/tmp/northstar-control-plane.json`.
 
-Until those six are green, Stage 1 remains the demo.
+Until those six are green, Stage 1 remains the demo. This repository has not produced that evidence.
 
 ## Machine
 

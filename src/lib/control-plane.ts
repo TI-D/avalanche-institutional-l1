@@ -27,7 +27,7 @@ const V4: Validator = {
   blsPublicKey: "0x8f2c91a0e4b7d63c1a59f0e8b2d4c7a1",
   weight: 100,
   az: "us-east-1d",
-  status: "healthy",
+  status: "modeled-up",
   role: "validator",
 };
 
@@ -47,15 +47,16 @@ function event(level: OpsEvent["level"], title: string, detail: string): OpsEven
 
 export function initialState(): ControlPlane {
   return {
+    mode: "stage-1-json-model",
     network: {
       customer: "Northstar Capital",
       l1Name: "Northstar L1",
       evmChainId: 431271,
-      subnetId: "2nS9xYkQ4mR7wL1cT6uH0bE3aF8dP2qV",
-      blockchainId: "2oT0yZlR5nS8xM2dU7vI1cF4bG9eQ3rW",
-      latestBlock: 4281,
-      consensus: "healthy",
-      rpc: "operational",
+      subnetId: "model-subnet-not-on-p-chain",
+      blockchainId: "model-blockchain-not-on-p-chain",
+      latestBlock: 0,
+      consensus: "modeled-majority",
+      rpc: "modeled-up",
     },
     validators: [
       {
@@ -65,7 +66,7 @@ export function initialState(): ControlPlane {
         blsPublicKey: "0x4a91c2e0b8d7f35a1c60e9d2b4f8a7c3",
         weight: 100,
         az: "us-east-1a",
-        status: "healthy",
+        status: "modeled-up",
         role: "validator",
       },
       {
@@ -75,7 +76,7 @@ export function initialState(): ControlPlane {
         blsPublicKey: "0x7c03d1f9a6e248b0d52f1c8a3e7b6d04",
         weight: 100,
         az: "us-east-1b",
-        status: "healthy",
+        status: "modeled-up",
         role: "validator",
       },
       {
@@ -85,32 +86,32 @@ export function initialState(): ControlPlane {
         blsPublicKey: "0x1e58a0c7d4b936f2e81a0d9c6f3b5e17",
         weight: 100,
         az: "us-east-1c",
-        status: "healthy",
+        status: "modeled-up",
         role: "validator",
       },
     ],
     validatorManager: {
-      address: "0xfacade0000000000000000000000000000000001",
+      address: "0x0000000000000000000000000000000000000000",
       mode: "PoA",
       active: 3,
     },
     icm: {
-      connected: true,
-      teleporter: "0x253b2784c3d88015a53f840767b6417be6684261",
-      relayer: "connected",
+      connected: false,
+      teleporter: "0x0000000000000000000000000000000000000000",
+      relayer: "modeled",
       lastMessage: null,
       messages: [],
     },
     recovery: {
-      lastBackupAt: "2026-08-24T14:02:11.000Z",
+      lastBackupAt: null,
       lastRestoreAt: null,
-      lastFailureDrill: "passed",
+      lastFailureDrill: "not-run",
     },
     events: [
       event(
-        "success",
-        "Northstar L1 online",
-        "3/3 validators healthy. Restricted RPC, ValidatorManager, and ICM relayer reported ready."
+        "info",
+        "Stage 1 model initialized",
+        "This JSON file is a teaching control plane. AvalancheGo is not running. NodeIDs, BLS keys, subnet IDs, and block height are placeholders."
       ),
     ],
   };
@@ -121,10 +122,20 @@ function persist(state: ControlPlane) {
   writeFileSync(/* turbopackIgnore: true */ STATE_PATH, JSON.stringify(state, null, 2));
 }
 
+function isModelState(value: unknown): value is ControlPlane {
+  return Boolean(value && typeof value === "object" && (value as ControlPlane).mode === "stage-1-json-model");
+}
+
 export function readState(): ControlPlane {
   try {
     const raw = readFileSync(/* turbopackIgnore: true */ STATE_PATH, "utf8");
-    return JSON.parse(raw) as ControlPlane;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!isModelState(parsed)) {
+      const fresh = initialState();
+      persist(fresh);
+      return fresh;
+    }
+    return parsed;
   } catch {
     const fresh = initialState();
     persist(fresh);
@@ -132,15 +143,17 @@ export function readState(): ControlPlane {
   }
 }
 
-function healthyCount(state: ControlPlane) {
-  return state.validators.filter((v) => v.status === "healthy").length;
+function upCount(state: ControlPlane) {
+  return state.validators.filter((v) => v.status === "modeled-up").length;
 }
 
 function recompute(state: ControlPlane) {
-  const healthy = healthyCount(state);
-  state.validatorManager.active = healthy;
-  state.network.consensus = healthy >= 2 ? "healthy" : "degraded";
-  state.network.rpc = healthy >= 1 ? (healthy >= 2 ? "operational" : "degraded") : "down";
+  const up = upCount(state);
+  state.validatorManager.active = up;
+  // Teaching hypothesis only. Avalanche liveness is not a 2/3 PBFT quorum.
+  // Real health is advancing accepted height and acceptance latency.
+  state.network.consensus = up >= 2 ? "modeled-majority" : "modeled-minority";
+  state.network.rpc = up >= 1 ? (up >= 2 ? "modeled-up" : "modeled-degraded") : "modeled-down";
   state.network.latestBlock += 1;
 }
 
@@ -162,7 +175,7 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
       if (state.validators.some((v) => v.id === "v4")) {
         pushEvent(
           state,
-          event("warn", "Validator 4 already present", "Registration is a no-op. Reset the demo to replay the lifecycle.")
+          event("warn", "Model: Validator 4 already present", "Reset the demo to replay the modeled lifecycle.")
         );
         break;
       }
@@ -170,17 +183,17 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
         state,
         event(
           "info",
-          "PoAManager.initiateValidatorRegistration",
-          "ValidatorManager constructed RegisterL1ValidatorMessage. BLS aggregation and P-Chain RegisterL1ValidatorTx follow."
+          "Model: initiateValidatorRegistration",
+          "No Warp message was built. No P-Chain RegisterL1ValidatorTx was submitted. The model appends a fourth placeholder validator."
         )
       );
-      state.validators.push({ ...V4, status: "healthy" });
+      state.validators.push({ ...V4, status: "modeled-up" });
       pushEvent(
         state,
         event(
           "success",
-          "P-Chain registration complete",
-          "L1ValidatorRegistrationMessage delivered. completeValidatorRegistration() finalized Validator 4. Set is now 4/4."
+          "Model: registration complete",
+          "completeValidatorRegistration was not called. The set is now 4 modeled entries."
         )
       );
       break;
@@ -192,51 +205,47 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
         state,
         event(
           "info",
-          "PoAManager.initiateValidatorRemoval",
-          `${target.name} weight set to 0. SetL1ValidatorWeightTx submitted to P-Chain.`
+          "Model: initiateValidatorRemoval",
+          `${target.name} removed from the JSON array. SetL1ValidatorWeightTx was not submitted.`
         )
       );
       state.validators = state.validators.filter((v) => v.id !== target.id);
       pushEvent(
         state,
-        event(
-          "success",
-          "Validator removed",
-          `${target.name} acknowledged by P-Chain via L1ValidatorRegistrationMessage(valid=0). Network remains healthy.`
-        )
+        event("success", "Model: validator removed", `${target.name} deleted from local state.`)
       );
       break;
     }
     case "destroy-validator": {
       const target = state.validators.find((v) => v.id === (validatorId ?? "v2"));
       if (!target) break;
-      target.status = "destroyed";
-      state.recovery.lastFailureDrill = "failed";
+      target.status = "modeled-down";
+      state.recovery.lastFailureDrill = "modeled-down";
       pushEvent(
         state,
         event(
           "error",
-          `${target.name} destroyed`,
-          "Instance terminated. Remaining validators continue consensus. RPC stays up on the restricted endpoint."
+          `Model: ${target.name} marked down`,
+          "No host was terminated. Remaining entries stay modeled-up. This is not evidence of continued finality."
         )
       );
       break;
     }
     case "restore-validator": {
-      const target = state.validators.find((v) => v.id === (validatorId ?? "v2") && v.status === "destroyed");
+      const target = state.validators.find((v) => v.id === (validatorId ?? "v2") && v.status === "modeled-down");
       if (!target) {
-        pushEvent(state, event("warn", "Nothing to restore", "Destroy a validator first, then rebuild it from staking-key backup."));
+        pushEvent(state, event("warn", "Model: nothing to restore", "Mark a validator down first."));
         break;
       }
-      target.status = "healthy";
-      state.recovery.lastFailureDrill = "passed";
+      target.status = "modeled-up";
+      state.recovery.lastFailureDrill = "modeled-restore";
       state.recovery.lastRestoreAt = now();
       pushEvent(
         state,
         event(
           "success",
-          `${target.name} rebuilt`,
-          "Staking keys restored from encrypted backup. AvalancheGo rejoined the L1 validator set. Drill passed."
+          `Model: ${target.name} marked up`,
+          "No staking files were restored. No NodeID was verified. A real restore must fence the old host first."
         )
       );
       break;
@@ -256,33 +265,9 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
       pushEvent(
         state,
         event(
-          "info",
-          "AssetApproved signed on Northstar L1",
-          "assetId=82731 approved=true. TeleporterMessenger.sendCrossChainMessage() emitted."
-        )
-      );
-      pushEvent(
-        state,
-        event(
-          "info",
-          "BLS signatures aggregated",
-          "Quorum of Northstar validator BLS signatures aggregated into a single Warp multi-signature."
-        )
-      );
-      pushEvent(
-        state,
-        event(
-          "info",
-          "Relayer delivered to Settlement L1",
-          "ICM relayer submitted receiveCrossChainMessage on Settlement. No extra trust assumption beyond the origin validator set."
-        )
-      );
-      pushEvent(
-        state,
-        event(
           "success",
-          "ApprovalReceived on Settlement L1",
-          "Settlement decoded AssetApproved { assetId: 82731, approved: true } and emitted ApprovalReceived."
+          "Model: AssetApproved recorded",
+          "No Teleporter message left this process. Foundry tests cover authorization. Live delivery is Stage 2."
         )
       );
       break;
@@ -293,8 +278,8 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
         state,
         event(
           "success",
-          "Staking-key backup completed",
-          "Encrypted TLS/staking/BLS material sealed with KMS and written to the isolated backup bucket."
+          "Model: backup timestamp written",
+          "No TLS, BLS, or database files were copied. This timestamp is not a backup artifact."
         )
       );
       break;
@@ -305,8 +290,8 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
         state,
         event(
           "success",
-          "Backup restore verified",
-          "Keys and node identity restored into a replacement host. NodeID and BLS public key unchanged."
+          "Model: restore timestamp written",
+          "No identity was restored. A real restore must fence the previous host before reusing a NodeID."
         )
       );
       break;
@@ -321,21 +306,17 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
 }
 
 export function summarize(state: ControlPlane) {
-  const healthy = healthyCount(state);
+  const up = upCount(state);
   const total = state.validators.length;
   return {
-    validators: `${healthy}/${total} healthy`,
+    mode: state.mode,
+    validators: `${up}/${total} modeled-up`,
     consensus: state.network.consensus,
     rpc: state.network.rpc,
-    latestBlock: state.network.latestBlock,
-    validatorManager: `${state.validatorManager.active} active`,
-    icm:
-      state.icm.lastMessage?.stage === "destination-verified"
-        ? "message received"
-        : state.icm.connected
-          ? "connected"
-          : "down",
-    recovery: state.recovery.lastFailureDrill === "passed" ? "passed" : state.recovery.lastFailureDrill,
+    latestBlock: `model ${state.network.latestBlock}`,
+    validatorManager: `${state.validatorManager.active} modeled`,
+    icm: state.icm.lastMessage ? "modeled message" : "no modeled message",
+    recovery: state.recovery.lastFailureDrill,
   };
 }
 

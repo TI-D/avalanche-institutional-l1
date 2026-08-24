@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Validator lifecycle" };
 
 const steps = [
   {
-    title: "3 validators healthy",
+    title: "Initial set registered",
     detail: "Initial set from ConvertSubnetToL1Tx. initializeValidatorSet consumes the SubnetToL1ConversionMessage so the contract and P-Chain agree.",
   },
   {
@@ -40,6 +40,11 @@ export default function ValidatorsPage() {
       kicker="Validator lifecycle"
       title="Adding a validator is two L1 transactions, one P-Chain transaction, and two BLS rounds."
       lede="This is the flow I wanted to be able to whiteboard. Creating three nodes is not the skill. Driving ValidatorManager against the P-Chain is."
+      evidence={{
+        level: "source-written",
+        title: "Accurate lifecycle. No transactions from this repo.",
+        note: "./scripts/add-validator posts to the JSON control plane. Stage 2's avalanche blockchain addValidator wrapper has not been run.",
+      }}
     >
       <ol className="space-y-3">
         {steps.map((step, i) => (
@@ -62,9 +67,9 @@ export default function ValidatorsPage() {
       </Section>
       <Section title="What the TypeScript SDK is for">
         <p>
-          Ava&apos;s interchain SDK can orchestrate the full register/remove path: wait for Warp signatures, submit the P-Chain transaction, then call complete* on the L1. The scripts in this repo wrap that mental model. Run{" "}
-          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">./scripts/add-validator</code> and{" "}
-          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">./scripts/remove-validator</code> against the local console to see the stages, or against a real L1 when the endpoints are configured.
+          Ava&apos;s interchain SDK can orchestrate the full register/remove path: wait for Warp signatures, submit the P-Chain transaction, then call complete* on the L1. This repo does not yet wrap that SDK.{" "}
+          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">./scripts/add-validator</code> updates the Stage 1 model.{" "}
+          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">./scripts/local/add-validator</code> is an unrun wrapper around the interactive CLI.
         </p>
       </Section>
     </DocPage>

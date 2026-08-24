@@ -1,27 +1,32 @@
 # Production readiness
 
-Honesty is staged. See `docs/stage-2-local.md` and `docs/stage-3-go-live.md`.
+Rule: no capability is called implemented, healthy, passed, or production-ready without a linked evidence artifact.
 
-## Stage 1: shipped
+Canonical status table: the `/readiness` page, backed by `src/lib/evidence.ts`.
 
-- Documentation site and ops console
-- Modular Terraform and Ansible (written, not applied)
-- Validator lifecycle and ICM contracts (written, not deployed)
-- Operator scripts against the local JSON control plane
-- Runbooks and the implemented-versus-designed line for HSM
+## Evidence levels
 
-## Stage 2: local AvalancheGo (next)
+- `modeled`: JSON or prose simulation
+- `source-written`: code exists, never executed against real Avalanche components
+- `locally-executed`: ran against a local AvalancheGo network, with artifacts
+- `fuji-executed`: Fuji transactions exist
+- `aws-lab-executed`: disposable AWS apply exists
+- `externally-validated`: another qualified person operated or reviewed it
 
-- `avalanche-cli` local Primary Network
-- Northstar + Settlement L1s, Teleporter, relayer
-- Real add/remove validator and a kill/restart drill
-- Console pointed at live localhost RPC
+## Stage 1 (this commit)
 
-Not started in this environment until `./scripts/local/up` is run.
+- Documentation site: locally executed when `make check` is green
+- Ops console and `./scripts/{health,add-validator,backup,...}`: modeled
+- ValidatorManager lifecycle write-up: source-written
+- ICM contracts: source-written, Foundry tests locally executed
+- Terraform / Ansible: source-written skeleton, see `docs/aws-kit-gaps.md`
 
-## Stage 3: plan only
+## Stage 2
 
-- Customer overlay, security review, Fuji dress rehearsal, production apply
-- CloudHSM remote signing, dual-control PoA, SIEM, pentest remain designed
+Plan: `docs/stage-2-local.md`. Wrappers exist. Not booted. No NodeIDs or tx hashes are checked in.
 
-If a walkthrough claims HSM is live, or that Stage 1 registered a P-Chain validator, that walkthrough is wrong.
+## Stage 3
+
+Plan: `docs/stage-3-go-live.md`. No cloud apply. No Fuji or mainnet transactions.
+
+If a walkthrough claims HSM is live, that Stage 1 registered a P-Chain validator, or that a recovery drill passed, that walkthrough is wrong.

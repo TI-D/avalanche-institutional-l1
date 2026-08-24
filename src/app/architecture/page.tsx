@@ -9,7 +9,12 @@ export default function ArchitecturePage() {
     <DocPage
       kicker="Architecture"
       title="AvalancheGo, the P-Chain, and a permissioned EVM L1."
-      lede="The topology is institutional on purpose: validators never face the internet, RPC is a separate concern, and the P-Chain remains the source of truth for the validator set."
+      lede="The intended topology is institutional: validators never face the internet, RPC is a separate concern, and the P-Chain remains the source of truth for the validator set."
+      evidence={{
+        level: "source-written",
+        title: "This is a design drawing, not a deployed network.",
+        note: "The diagram's intended RPC path is a private ALB with mTLS. The Terraform creates an internal NLB with no listener. AvalancheGo is templated to bind HTTP to 127.0.0.1. See docs/aws-kit-gaps.md.",
+      }}
     >
       <ArchitectureDiagram />
       <Section title="AvalancheGo">
@@ -36,12 +41,12 @@ export default function ArchitecturePage() {
       </Section>
       <Section title="RPC is not a validator">
         <p>
-          Institutions constantly collapse these. Validators produce blocks. RPC nodes serve wallets, custodians, and internal services. Mixing them widens the attack surface and couples query load to consensus. Northstar therefore has a private RPC tier: archive for audit and debug, pruned for transaction intake, both reached only through an allowlisted, mTLS-terminated endpoint.
+          Institutions constantly collapse these. Validators produce blocks. RPC nodes serve wallets, custodians, and internal services. Mixing them widens the attack surface and couples query load to consensus. The intended Northstar design is a private RPC tier: archive for audit and debug, pruned for transaction intake, both reached only through an allowlisted, mTLS-terminated endpoint. Archive versus pruned is not configured in the current Ansible template. The RPC load-balancer path is not wired.
         </p>
       </Section>
       <Section title="Why this matches Ava Labs tooling">
         <p>
-          This is the same shape <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">avalanche-deploy</code> promotes: Terraform for VPC, validators, RPC, monitoring, and backups; Ansible for AvalancheGo and node config; optional ICM relayer and ValidatorManager initialization. The kit does not invent a parallel universe. It adds the institutional controls on top of the pattern Ava is already shipping.
+          This is the same shape <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">avalanche-deploy</code> promotes: Terraform for VPC, validators, RPC, monitoring, and backups; Ansible for AvalancheGo and node config; optional ICM relayer and ValidatorManager initialization. The kit follows that pattern on paper. It has not applied it.
         </p>
       </Section>
     </DocPage>

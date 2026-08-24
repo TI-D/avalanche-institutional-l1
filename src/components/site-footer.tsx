@@ -14,7 +14,7 @@ export function SiteFooter() {
             </p>
             <p className="mt-1 max-w-md text-sm text-muted-foreground">
               <WithAcronyms>
-                A reusable reference for taking a regulated institution from an ambiguous L1 request to working validator, RPC, ICM, and recovery infrastructure.
+                A reference for taking a regulated institution from an ambiguous L1 request to a documented L1 design. Stage 1 is a model. Stage 2 is the first real chain.
               </WithAcronyms>
             </p>
           </div>
@@ -24,7 +24,7 @@ export function SiteFooter() {
             Stages
           </Link>
           <Link href="/readiness" className="hover:text-white">
-            Implemented vs designed
+            Evidence index
           </Link>
           <Link href="/ops" className="hover:text-white">
             Runbooks

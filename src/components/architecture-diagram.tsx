@@ -46,7 +46,7 @@ export function ArchitectureDiagram() {
 
         <rect x="300" y="108" width="320" height="62" rx="12" fill="url(#box)" stroke="#3f3f46" />
         <Label x={300} y={120} width={320} text="Restricted RPC layer" className="text-[13px] font-semibold text-white" />
-        <Label x={300} y={142} width={320} text="Private ALB · mTLS · allowlisted CIDRs" className="text-[11px] text-zinc-400" />
+        <Label x={300} y={142} width={320} text="Intended: private ALB + mTLS. Terraform: NLB, no listener" className="text-[11px] text-zinc-400" />
 
         <line x1="460" y1="170" x2="460" y2="200" stroke="#3f3f46" />
         <line x1="170" y1="200" x2="750" y2="200" stroke="#3f3f46" />

@@ -7,14 +7,19 @@ export default function KitPage() {
   return (
     <DocPage
       kicker="Productization"
-      title="Northstar revealed a pattern. The kit is that pattern."
+      title="Northstar is meant to reveal a pattern. The kit is that pattern, unfinished."
       lede="The engagement is not done when the customer network is up. It is done when the next institution can start from Terraform, Ansible, contracts, scripts, and runbooks instead of a slide deck."
+      evidence={{
+        level: "source-written",
+        title: "Folder layout, not a proven product.",
+        note: "No second customer overlay exists. Terraform is an unvalidated skeleton. Operator scripts for Stage 1 talk to JSON.",
+      }}
     >
       <pre className="overflow-x-auto rounded-2xl border border-white/8 bg-[#101012] p-5 font-mono text-[12px] leading-6 text-zinc-300">
         {`avalanche-institutional-l1/
 ├── terraform/     network, validators, rpc, monitoring, backup
 ├── ansible/       avalanchego, hardening
-├── contracts/     institutional-registry, icm-demo
+├── contracts/     Foundry: registry, receiver, tests
 ├── scripts/       deploy, health, add/remove validator, backup, restore
 ├── docs/          architecture, threat model, lifecycle, ICM, readiness
 ├── runbooks/      failure, replacement, upgrade, incident
@@ -30,7 +35,7 @@ export default function KitPage() {
       </Section>
       <Section title="What I would productize next">
         <p>
-          A remote-signing sidecar that talks to CloudHSM. A ValidatorManager change ticket that cannot be submitted without a dual-control approval. Those came up as soon as the first deployment worked. They are listed as designed-not-built so the repo stays honest.
+          A remote-signing sidecar that talks to CloudHSM. A ValidatorManager change ticket that cannot be submitted without a dual-control approval. Those come up as soon as a real deployment exists. They are listed as designed, not built.
         </p>
       </Section>
     </DocPage>

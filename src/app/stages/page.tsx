@@ -9,11 +9,11 @@ export const metadata: Metadata = { title: "Stages" };
 const stages = [
   {
     n: "01",
-    status: "Shipped",
+    status: "Source written + site locally executed",
     title: "Architecture, kit, and operator model",
     cost: "Laptop. This site.",
-    body: "The engagement, topology, ValidatorManager lifecycle, threat model, runbooks, Terraform/Ansible modules, Solidity, and the ops console. The console is a control-plane model. It does not run AvalancheGo.",
-    proof: "You can whiteboard the flow and operate the demo without lying about HSM.",
+    body: "The engagement, topology, ValidatorManager lifecycle, threat model, runbooks, Terraform/Ansible skeleton, Solidity with Foundry tests, and the ops console. The console is a control-plane model. It does not run AvalancheGo.",
+    proof: "You can whiteboard the flow. You cannot claim a chain is healthy.",
     href: "/status",
     cta: "Open the Stage 1 console",
   },
@@ -43,8 +43,13 @@ export default function StagesPage() {
   return (
     <DocPage
       kicker="Portfolio stages"
-      title="Stage 1 is shipped. Stage 2 is a local chain. Stage 3 is the live plan."
+      title="Stage 1 is a model. Stage 2 is a local chain. Stage 3 is the live plan."
       lede="I will not collapse these. A working website is not a working L1. A working local L1 is not a bank deployment. The value of the portfolio is that the seams are visible."
+      evidence={{
+        level: "modeled",
+        title: "Stage 2 scripts exist. They have not been executed here.",
+        note: "Do not treat the Stage 1 console as a substitute for avalanche network status and eth_blockNumber.",
+      }}
     >
       <div className="grid gap-4">
         {stages.map((stage) => (

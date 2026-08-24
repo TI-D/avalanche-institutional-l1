@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | Northstar L1",
   },
   description:
-    "Production-minded reference architecture for deploying and operating a permissioned Avalanche L1 for a regulated institution.",
+    "Design and kit skeleton for a permissioned Avalanche L1. Stage 1 is a JSON model. AvalancheGo is not running.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

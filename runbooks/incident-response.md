@@ -1,9 +1,11 @@
 # Runbook: incident response
 
-| Severity | Example | Action |
-| --- | --- | --- |
-| Sev1 | Loss of quorum, suspected key theft | Freeze PoA initiate calls. Preserve logs. Page leadership and counsel. |
-| Sev2 | Single validator down, RPC degraded | Follow validator-failure. Keep producing blocks. |
-| Sev3 | Metrics gap, non-urgent upgrade | Ticket and next change window. |
+**Stage 1 warning:** there is no paging, SIEM, or live chain. This is a draft.
 
-If a BLS key is *suspected* compromised, restore is the wrong move. That is a replacement ceremony plus a review of every Warp message signed in the window.
+| Severity | Trigger | Immediate action |
+| --- | --- | --- |
+| Sev1 | Accepted height stopped, or suspected key theft | Fence affected hosts. Freeze PoA initiate calls. Preserve logs. Page leadership and counsel. |
+| Sev2 | One validator down, height still advancing | Fence the down host. Follow validator-failure.md. Do not re-key. |
+| Sev3 | RPC or relayer degraded, consensus progressing | Follow the specific component runbook. Keep a timeline. |
+
+If a key is suspected, that is a replacement ceremony, not a restore.

@@ -20,10 +20,25 @@ const actions: {
 ];
 
 function tone(status: string) {
-  if (["healthy", "operational", "connected", "passed", "destination-verified", "success"].includes(status)) {
+  if (["success", "destination-verified"].includes(status)) {
     return "bg-emerald-500";
   }
-  if (["registering", "removing", "degraded", "origin-signed", "bls-aggregated", "relayed", "info"].includes(status)) {
+  if (
+    [
+      "modeled-up",
+      "modeled-majority",
+      "modeled",
+      "modeled-restore",
+      "not-run",
+      "registering",
+      "removing",
+      "modeled-degraded",
+      "origin-signed",
+      "bls-aggregated",
+      "relayed",
+      "info",
+    ].includes(status)
+  ) {
     return "bg-amber-400";
   }
   return "bg-[#E84142]";
@@ -38,7 +53,7 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
     ["Latest block", summary.latestBlock],
     ["ValidatorManager", summary.validatorManager],
     ["ICM", summary.icm],
-    ["Recovery test", summary.recovery],
+    ["Recovery model", summary.recovery],
   ] as const;
 
   return (
@@ -90,10 +105,10 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
 
         <div className="space-y-4">
           <div className="rounded-2xl border border-white/8 bg-[#101012] p-5">
-            <h2 className="text-base font-semibold">Demonstrations</h2>
+            <h2 className="text-base font-semibold">Model actions</h2>
             <p className="mt-1 text-xs text-zinc-500">
               <WithAcronyms>
-                These drive a local control-plane model of the real ValidatorManager / P-Chain / ICM flow.
+                These only mutate the Stage 1 JSON model. They do not submit P-Chain transactions or copy staking keys.
               </WithAcronyms>
             </p>
             <div className="mt-4 flex flex-wrap gap-2">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { WithAcronyms } from "@/components/acronym";
 import { ArchitectureDiagram } from "@/components/architecture-diagram";
+import { EvidenceBanner } from "@/components/evidence-banner";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -9,37 +10,37 @@ const proofs = [
   {
     n: "01",
     title: "Avalanche architecture",
-    body: "EVM L1, AvalancheGo, P-Chain as validator registry, Subnet-EVM, restricted RPC, BLS keys, ValidatorManager.",
+    body: "Documented: EVM L1, AvalancheGo, P-Chain as validator registry, Subnet-EVM, restricted RPC, two BLS uses, ValidatorManager. Not running here.",
     href: "/architecture",
   },
   {
     n: "02",
     title: "Validator lifecycle",
-    body: "Add Validator 4 through initiate/complete registration, ICM and BLS aggregation, then remove Validator 2 without losing the network.",
+    body: "Documented: initiate/complete registration, two BLS aggregation contexts, weight-zero removal. No P-Chain transaction has been submitted from this repo.",
     href: "/validators",
   },
   {
     n: "03",
     title: "Institutional security",
-    body: "IaC, segmented networks, encrypted storage, secrets, minimal ports, centralized logs, and an explicit HSM/KMS design.",
+    body: "Source-written Terraform and Ansible plus an honest gap list. Isolation, HSM, and SIEM are not demonstrated.",
     href: "/security",
   },
   {
     n: "04",
     title: "Failure and recovery",
-    body: "Destroy a validator, keep consensus, rebuild from staking-key backup, then prove backup/restore with evidence.",
+    body: "The intended drill is: fence the old host, restore the same NodeID, measure accepted height. That drill has not been executed.",
     href: "/recovery",
   },
   {
     n: "05",
     title: "Interchain messaging",
-    body: "Northstar sends AssetApproved { assetId: 82731 } to Settlement. Teleporter, relayer, Warp, and BLS are traced.",
+    body: "Contracts now reject unauthorized origins and record a relayer policy. Foundry tests exist. Live Teleporter delivery is Stage 2.",
     href: "/icm",
   },
   {
     n: "06",
     title: "Reusable kit",
-    body: "Customer-specific Northstar work extracted into an Institutional Avalanche L1 Deployment Kit for the next engagement.",
+    body: "Folder layout and a customer-overlay idea. Reuse is not proven. A second institution overlay does not exist yet.",
     href: "/kit",
   },
 ];
@@ -53,25 +54,30 @@ export default function Home() {
           Forward Deployed Engineering · Ava Labs
         </p>
         <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl sm:leading-[1.05]">
-          A permissioned Avalanche L1 you could hand to a regulated institution.
+          A permissioned Avalanche L1 design you can audit, not a live bank chain.
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-          Northstar Capital asked for a private EVM-compatible Avalanche L1 for tokenized financial assets. Validators stay on approved infrastructure. Public exposure is minimized. Operations are auditable. Node failure is recoverable. The network talks to another Avalanche chain.
+          Northstar Capital is a fictional regulated asset manager. This repo is the engagement packet and kit skeleton for that request: private EVM L1, restricted operators, recoverable validators, one ICM approval to a Settlement L1.
         </p>
+        <div className="mt-8">
+          <EvidenceBanner level="modeled" title="Stage 1 is a JSON model. It does not run AvalancheGo.">
+            The cards below are evidence labels, not network health. Consensus, recovery, and validator counts are not measured. Stage 2 is the first time those claims can become real.
+          </EvidenceBanner>
+        </div>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link href="/status" className={cn(buttonVariants({ size: "lg" }))}>
-            Open the ops console
+            Open the Stage 1 console
           </Link>
-          <Link href="/engagement" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-            Read the engagement
+          <Link href="/readiness" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
+            Evidence index
           </Link>
         </div>
         <dl className="mt-12 grid gap-4 sm:grid-cols-4">
           {[
-            ["Network", "3/3 validators"],
-            ["Consensus", "Healthy"],
-            ["ValidatorManager", "PoA · 3 active"],
-            ["Recovery drill", "Passed"],
+            ["Evidence mode", "Stage 1 model"],
+            ["AvalancheGo", "Not running"],
+            ["P-Chain txs", "None"],
+            ["Recovery drill", "Not executed"],
           ].map(([k, v]) => (
             <div key={k} className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-4">
               <dt className="text-[11px] tracking-[0.16em] text-zinc-500 uppercase">{k}</dt>
@@ -84,9 +90,9 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Reference architecture</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Intended architecture</h2>
             <p className="mt-2 text-sm text-zinc-400">
-              Not a token, NFT, or DeFi app. Validator infrastructure, isolation, observability, and ICM.
+              Design drawing. The Terraform today does not implement the RPC path shown. See the gap list.
             </p>
           </div>
           <Link href="/architecture" className={cn(buttonVariants({ variant: "ghost" }))}>
@@ -97,9 +103,9 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <h2 className="text-2xl font-semibold tracking-tight">Six things this project has to prove</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Six things this project still has to prove</h2>
         <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-          Scoped against the Ava Labs Senior Forward Deployed Engineer role: own an institutional engagement, ship the infrastructure, then productize the pattern.
+          Scoped against the Ava Labs Senior Forward Deployed Engineer role. Documentation is not the same as operation.
         </p>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {proofs.map((proof) => (
@@ -120,17 +126,17 @@ export default function Home() {
         <div className="rounded-3xl border border-white/8 bg-[linear-gradient(180deg,rgb(232_65_66/0.12),transparent_42%),#101012] px-6 py-10 sm:px-10">
           <p className="text-[12px] tracking-[0.2em] text-[#E84142] uppercase">The FDE loop</p>
           <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight">
-            Ambiguous request. Working infrastructure. Reusable capability.
+            Ambiguous request. Then working infrastructure. Then a reusable kit.
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-300">
-            Northstar was the customer. The kit is the product. Once the deployment worked, the customer-specific pieces stayed in the case study, and the repeatable pieces became Terraform, Ansible, contracts, scripts, and runbooks.
+            Stage 1 covered the request, the architecture, and the kit skeleton. The middle of the loop (a running local L1, real validator txs, a measured restore) is Stage 2 and is not done. I will not write as if that middle already happened.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/kit" className={cn(buttonVariants())}>
-              See the deployment kit
+            <Link href="/stages" className={cn(buttonVariants())}>
+              See the stages
             </Link>
-            <Link href="/stages" className={cn(buttonVariants({ variant: "outline" }))}>
-              Stage 2 and 3
+            <Link href="/kit" className={cn(buttonVariants({ variant: "outline" }))}>
+              Kit layout
             </Link>
           </div>
         </div>
