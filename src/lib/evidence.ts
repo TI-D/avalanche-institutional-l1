@@ -25,7 +25,7 @@ export const capabilities: Capability[] = [
     id: "docs-site",
     name: "Documentation site",
     level: "locally-executed",
-    notes: "Next.js site builds and renders. That is the only locally executed surface today.",
+    notes: "Next.js site builds and renders. AvalancheGo L1s, lifecycle, ICM delivery, and the host-failure restore are separate locally-executed rows.",
     evidence: "npm ci && npm run build",
   },
   {
