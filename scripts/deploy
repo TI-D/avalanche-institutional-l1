@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Provision path for a real cloud L1. Locally this boots the documentation
+# site and control-plane demo so the engagement can be walked without AWS.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+if [[ "${1:-local}" == "cloud" ]]; then
+  echo "Cloud path (requires credentials, do not run blindly):"
+  echo "  cd terraform/l1/aws && terraform init && terraform apply"
+  echo "  ansible-playbook -i ansible/inventory/aws_hosts ansible/hardening/tasks/main.yml"
+  echo "  ansible-playbook -i ansible/inventory/aws_hosts ansible/avalanchego/tasks/main.yml"
+  echo "  # then create-l1 / configure-l1 as in docs/architecture.md"
+  exit 0
+fi
+
+echo "Starting Northstar local console on :43127"
+exec npm run dev

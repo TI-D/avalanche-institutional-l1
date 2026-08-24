@@ -1,0 +1,16 @@
+{
+  "http-host": "127.0.0.1",
+  "http-port": 9650,
+  "staking-port": 9651,
+  "public-ip-resolution-service": "ifconfigme",
+  "network-id": "{{ network_id | default('fuji') }}",
+  "data-dir": "/var/lib/avalanchego",
+  "log-level": "info",
+  "log-dir": "/var/lib/avalanchego/logs",
+  "partial-sync-primary-network": true,
+  "track-subnets": "{{ subnet_id | default('') }}",
+  "http-allowed-hosts": "localhost,127.0.0.1",
+  "staking-tls-cert-file": "/etc/avalanchego/staking/staker.crt",
+  "staking-tls-key-file": "/etc/avalanchego/staking/staker.key",
+  "staking-signer-key-file": "/etc/avalanchego/staking/signer.key"
+}

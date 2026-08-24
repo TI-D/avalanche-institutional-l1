@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+echo "Sealing staking / BLS material to the backup store"
+if need_jq; then
+  act backup | jq '.state.recovery'
+else
+  act backup
+fi

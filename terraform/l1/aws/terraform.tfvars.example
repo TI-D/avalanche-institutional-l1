@@ -1,0 +1,7 @@
+name               = "northstar-l1"
+region             = "us-east-1"
+vpc_cidr           = "10.64.0.0/16"
+operator_cidrs     = ["10.20.0.0/16"]
+validator_count    = 3
+ami_id             = "ami-replace-me"
+backup_bucket_name = "northstar-l1-staking-backup"

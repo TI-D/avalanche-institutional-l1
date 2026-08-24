@@ -1,0 +1,50 @@
+---
+- name: Institutional host hardening
+  hosts: all
+  become: true
+  tasks:
+    - name: Disable password SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PasswordAuthentication"
+        line: "PasswordAuthentication no"
+      notify: Restart sshd
+
+    - name: Disable root SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin no"
+      notify: Restart sshd
+
+    - name: Install baseline packages
+      apt:
+        name:
+          - unattended-upgrades
+          - auditd
+          - chrony
+          - fail2ban
+        update_cache: true
+
+    - name: Enable unattended upgrades
+      service:
+        name: unattended-upgrades
+        enabled: true
+        state: started
+
+    - name: Enable auditd
+      service:
+        name: auditd
+        enabled: true
+        state: started
+
+    - name: Restrict default umask
+      lineinfile:
+        path: /etc/profile
+        line: "umask 027"
+        create: true
+  handlers:
+    - name: Restart sshd
+      service:
+        name: ssh
+        state: restarted

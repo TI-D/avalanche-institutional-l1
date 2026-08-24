@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+echo "Initiating Validator 2 removal (weight 0 -> P-Chain -> complete)"
+if need_jq; then
+  act remove-validator v2 | jq '{event: .state.events[0], validators: [.state.validators[] | {name,status}]}'
+else
+  act remove-validator v2
+fi
