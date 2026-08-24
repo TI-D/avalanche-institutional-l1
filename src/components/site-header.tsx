@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
+import { Acronym, WithAcronyms } from "@/components/acronym";
 import { AvalancheMark } from "@/components/avalanche-mark";
 import { buttonVariants } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -18,7 +19,9 @@ export function SiteHeader() {
         <Link href="/" className="flex items-center gap-2.5">
           <AvalancheMark className="size-7" />
           <div className="leading-tight">
-            <div className="text-[13px] font-semibold tracking-tight">Northstar L1</div>
+            <div className="text-[13px] font-semibold tracking-tight">
+              Northstar <Acronym term="L1" />
+            </div>
             <div className="text-[11px] text-muted-foreground">Institutional Avalanche Reference</div>
           </div>
         </Link>
@@ -35,7 +38,7 @@ export function SiteHeader() {
                   active ? "bg-white/8 text-white" : "text-zinc-400 hover:text-white"
                 )}
               >
-                {item.label}
+                <WithAcronyms>{item.label}</WithAcronyms>
               </Link>
             );
           })}
@@ -54,7 +57,9 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="bg-[#0b0b0d]">
               <SheetHeader>
-                <SheetTitle>Northstar L1</SheetTitle>
+                <SheetTitle>
+                  Northstar <Acronym term="L1" />
+                </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-1 px-4">
                 {nav.map((item) => (
@@ -63,7 +68,7 @@ export function SiteHeader() {
                     href={item.href}
                     className="rounded-lg px-3 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white"
                   >
-                    {item.label}
+                    <WithAcronyms>{item.label}</WithAcronyms>
                   </Link>
                 ))}
               </div>

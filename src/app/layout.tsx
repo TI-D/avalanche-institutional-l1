@@ -31,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`dark ${geistSans.variable} ${geistSans.className} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <TooltipProvider>
+        <TooltipProvider delay={120}>
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <SiteFooter />

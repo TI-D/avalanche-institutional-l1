@@ -1,4 +1,5 @@
 import { runDemoAction } from "@/app/status/actions";
+import { WithAcronyms } from "@/components/acronym";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Action, ControlPlanePayload } from "@/lib/control-plane-types";
@@ -35,7 +36,7 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
     ["Consensus", summary.consensus],
     ["RPC", summary.rpc],
     ["Latest block", summary.latestBlock],
-    ["Validator Manager", summary.validatorManager],
+    ["ValidatorManager", summary.validatorManager],
     ["ICM", summary.icm],
     ["Recovery test", summary.recovery],
   ] as const;
@@ -45,7 +46,9 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map(([label, value]) => (
           <div key={label} className="rounded-2xl border border-white/8 bg-[#101012] px-4 py-4">
-            <div className="text-[11px] tracking-[0.16em] text-zinc-500 uppercase">{label}</div>
+            <div className="text-[11px] tracking-[0.16em] text-zinc-500 uppercase">
+              <WithAcronyms>{label}</WithAcronyms>
+            </div>
             <div className="mt-2 flex items-center gap-2 text-lg font-medium capitalize">
               <span className={`size-2 rounded-full ${tone(String(value))}`} />
               {value}
@@ -59,7 +62,9 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
           <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
             <div>
               <h2 className="text-base font-semibold">Validators</h2>
-              <p className="text-xs text-zinc-500">Northstar L1 · EVM {state.network.evmChainId}</p>
+              <p className="text-xs text-zinc-500">
+                <WithAcronyms>Northstar L1 · EVM</WithAcronyms> {state.network.evmChainId}
+              </p>
             </div>
             <Badge variant="outline">{state.network.consensus}</Badge>
           </div>
@@ -87,7 +92,9 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
           <div className="rounded-2xl border border-white/8 bg-[#101012] p-5">
             <h2 className="text-base font-semibold">Demonstrations</h2>
             <p className="mt-1 text-xs text-zinc-500">
-              These drive a local control-plane model of the real ValidatorManager / P-Chain / ICM flow.
+              <WithAcronyms>
+                These drive a local control-plane model of the real ValidatorManager / P-Chain / ICM flow.
+              </WithAcronyms>
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {actions.map((item) => (
@@ -103,7 +110,9 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
           </div>
 
           <div className="rounded-2xl border border-white/8 bg-[#101012] p-5">
-            <h2 className="text-base font-semibold">Last ICM message</h2>
+            <h2 className="text-base font-semibold">
+              Last <WithAcronyms>ICM</WithAcronyms> message
+            </h2>
             {state.icm.lastMessage ? (
               <pre className="mt-3 overflow-x-auto font-mono text-[11px] leading-5 text-zinc-300">
                 {JSON.stringify(
@@ -137,10 +146,14 @@ export function OpsConsole({ data }: { data: ControlPlanePayload }) {
             <li key={evt.id} className="px-5 py-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className={`size-1.5 rounded-full ${tone(evt.level)}`} />
-                <span className="text-sm font-medium">{evt.title}</span>
+                <span className="text-sm font-medium">
+                  <WithAcronyms>{evt.title}</WithAcronyms>
+                </span>
                 <span className="text-[11px] text-zinc-500">{new Date(evt.at).toLocaleTimeString()}</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-400">{evt.detail}</p>
+              <p className="mt-1 text-sm text-zinc-400">
+                <WithAcronyms>{evt.detail}</WithAcronyms>
+              </p>
             </li>
           ))}
         </ol>

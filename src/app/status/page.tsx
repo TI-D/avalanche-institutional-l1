@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { WithAcronyms } from "@/components/acronym";
 import { OpsConsole } from "@/components/ops-console";
 import { snapshot } from "@/lib/control-plane";
 
@@ -18,7 +19,9 @@ export default function StatusPage() {
       </p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight">Northstar operations console</h1>
       <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-400">
-        This is the entire UI on purpose. Status, validator lifecycle, ICM, backup, and recovery. The point is infrastructure you can operate, break, and restore, not a financial application.
+        <WithAcronyms>
+          This is the entire UI on purpose. Status, validator lifecycle, ICM, backup, and recovery. The point is infrastructure you can operate, break, and restore, not a financial application.
+        </WithAcronyms>
       </p>
       <div className="mt-10">
         <OpsConsole data={data} />

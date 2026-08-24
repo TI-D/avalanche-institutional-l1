@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WithAcronyms } from "@/components/acronym";
 import { AvalancheMark } from "@/components/avalanche-mark";
 
 export function SiteFooter() {
@@ -8,9 +9,13 @@ export function SiteFooter() {
         <div className="flex items-start gap-3">
           <AvalancheMark className="mt-0.5 size-6" />
           <div>
-            <p className="text-sm font-medium">Institutional Avalanche L1 Deployment Kit</p>
+            <p className="text-sm font-medium">
+              <WithAcronyms>Institutional Avalanche L1 Deployment Kit</WithAcronyms>
+            </p>
             <p className="mt-1 max-w-md text-sm text-muted-foreground">
-              A reusable reference for taking a regulated institution from an ambiguous L1 request to working validator, RPC, ICM, and recovery infrastructure.
+              <WithAcronyms>
+                A reusable reference for taking a regulated institution from an ambiguous L1 request to working validator, RPC, ICM, and recovery infrastructure.
+              </WithAcronyms>
             </p>
           </div>
         </div>
@@ -35,7 +40,7 @@ export function SiteFooter() {
             target="_blank"
             rel="noreferrer"
           >
-            Ava Labs FDE role
+            Ava Labs <WithAcronyms>FDE</WithAcronyms> role
           </a>
         </div>
       </div>

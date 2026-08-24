@@ -1,3 +1,27 @@
+import { WithAcronyms } from "@/components/acronym";
+
+function Label({
+  x,
+  y,
+  width,
+  text,
+  className,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  text: string;
+  className: string;
+}) {
+  return (
+    <foreignObject x={x} y={y} width={width} height="28" overflow="visible">
+      <div className={`text-center leading-5 ${className}`}>
+        <WithAcronyms>{text}</WithAcronyms>
+      </div>
+    </foreignObject>
+  );
+}
+
 export function ArchitectureDiagram() {
   return (
     <div className="overflow-x-auto rounded-2xl border border-white/8 bg-[#0c0c0e] p-4 sm:p-6">
@@ -21,12 +45,8 @@ export function ArchitectureDiagram() {
         <line x1="460" y1="74" x2="460" y2="108" stroke="#3f3f46" />
 
         <rect x="300" y="108" width="320" height="62" rx="12" fill="url(#box)" stroke="#3f3f46" />
-        <text x="460" y="134" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">
-          Restricted RPC layer
-        </text>
-        <text x="460" y="154" textAnchor="middle" fill="#a1a1aa" fontSize="11">
-          Private ALB · mTLS · allowlisted CIDRs
-        </text>
+        <Label x={300} y={120} width={320} text="Restricted RPC layer" className="text-[13px] font-semibold text-white" />
+        <Label x={300} y={142} width={320} text="Private ALB · mTLS · allowlisted CIDRs" className="text-[11px] text-zinc-400" />
 
         <line x1="460" y1="170" x2="460" y2="200" stroke="#3f3f46" />
         <line x1="170" y1="200" x2="750" y2="200" stroke="#3f3f46" />
@@ -45,9 +65,7 @@ export function ArchitectureDiagram() {
             <text x={node.x + 36} y="250" fill="#fff" fontSize="13" fontWeight="600">
               {node.label}
             </text>
-            <text x={node.x + 22} y="272" fill="#a1a1aa" fontSize="11">
-              {node.sub}
-            </text>
+            <Label x={node.x} y={256} width={200} text={node.sub} className="text-[11px] text-zinc-400" />
           </g>
         ))}
 
@@ -58,34 +76,24 @@ export function ArchitectureDiagram() {
         <line x1="460" y1="318" x2="460" y2="340" stroke="#3f3f46" />
 
         <rect x="300" y="340" width="320" height="54" rx="12" fill="url(#box)" stroke="#E84142" />
-        <text x="460" y="372" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">
-          Northstar Avalanche L1
-        </text>
+        <Label x={300} y={356} width={320} text="Northstar Avalanche L1" className="text-[13px] font-semibold text-white" />
 
         <line x1="460" y1="394" x2="460" y2="418" stroke="#3f3f46" />
         <rect x="300" y="418" width="320" height="54" rx="12" fill="url(#box)" stroke="#3f3f46" />
-        <text x="460" y="450" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">
-          ValidatorManager · PoA
-        </text>
+        <Label x={300} y={434} width={320} text="ValidatorManager · PoA" className="text-[13px] font-semibold text-white" />
 
         <line x1="460" y1="472" x2="460" y2="496" stroke="#3f3f46" />
         <rect x="160" y="496" width="240" height="62" rx="12" fill="url(#box)" stroke="#3f3f46" />
-        <text x="280" y="522" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">
-          P-Chain registry
-        </text>
+        <Label x={160} y={508} width={240} text="P-Chain registry" className="text-[13px] font-semibold text-white" />
         <text x="280" y="542" textAnchor="middle" fill="#a1a1aa" fontSize="11">
           Source of truth for validators
         </text>
 
-        <text x="460" y="518" textAnchor="middle" fill="#E84142" fontSize="11" fontWeight="600">
-          ICM
-        </text>
+        <Label x={400} y={500} width={120} text="ICM" className="text-[11px] font-semibold text-[#E84142]" />
         <line x1="400" y1="532" x2="520" y2="532" stroke="#E84142" />
 
         <rect x="520" y="496" width="240" height="62" rx="12" fill="url(#box)" stroke="#3f3f46" />
-        <text x="640" y="522" textAnchor="middle" fill="#fff" fontSize="13" fontWeight="600">
-          Settlement L1
-        </text>
+        <Label x={520} y={508} width={240} text="Settlement L1" className="text-[13px] font-semibold text-white" />
         <text x="640" y="542" textAnchor="middle" fill="#a1a1aa" fontSize="11">
           ApprovalReceived
         </text>

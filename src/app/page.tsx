@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WithAcronyms } from "@/components/acronym";
 import { ArchitectureDiagram } from "@/components/architecture-diagram";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -45,6 +46,7 @@ const proofs = [
 
 export default function Home() {
   return (
+    <WithAcronyms>
     <div>
       <section className="mx-auto max-w-7xl px-4 pt-16 pb-12 sm:px-6 sm:pt-24">
         <p className="text-[12px] font-medium tracking-[0.22em] text-[#E84142] uppercase">
@@ -134,5 +136,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </WithAcronyms>
   );
 }
