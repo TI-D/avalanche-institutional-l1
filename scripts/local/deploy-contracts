@@ -1,44 +1,53 @@
 #!/usr/bin/env bash
 # Stage 2: deploy InstitutionalRegistry on Northstar and SettlementReceiver on Settlement.
+# Receiver needs the registry address. Registry needs the receiver address.
+# Predict the Northstar CREATE address from the deployer nonce, then deploy both.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 need_cli
 
-if ! command -v forge >/dev/null 2>&1; then
-  echo "Foundry is required (forge/cast). https://book.getfoundry.sh/getting-started/installation"
+if ! command -v forge >/dev/null 2>&1 || ! command -v cast >/dev/null 2>&1; then
+  echo "Foundry is required (forge/cast). https://book.getfoundry.sh/getting-started/installation" >&2
   exit 1
 fi
 
-rpc_file="$HOME/.avalanche-cli/runs/network.status.json"
-echo "Read RPC URLs from avalanche network status / CLI describe output."
-echo "Set NORTHSTAR_RPC and SETTLEMENT_RPC, plus TELEPORTER, SETTLEMENT_BLOCKCHAIN_ID, ADMIN_KEY."
-echo
-echo "Example:"
-echo "  forge create contracts/icm-demo/SettlementReceiver.sol:SettlementReceiver \\"
-echo "    --rpc-url \"\$SETTLEMENT_RPC\" --private-key \"\$ADMIN_KEY\" --constructor-args \"\$TELEPORTER\""
-echo "  forge create contracts/institutional-registry/InstitutionalRegistry.sol:InstitutionalRegistry \\"
-echo "    --rpc-url \"\$NORTHSTAR_RPC\" --private-key \"\$ADMIN_KEY\" \\"
-echo "    --constructor-args \"\$TELEPORTER\" \"\$SETTLEMENT_BLOCKCHAIN_ID\" \"\$RECEIVER\" \"\$ADMIN_ADDRESS\""
-
-if [[ -z "${NORTHSTAR_RPC:-}" || -z "${SETTLEMENT_RPC:-}" || -z "${ADMIN_KEY:-}" ]]; then
-  echo
-  echo "Env not set. Stopping before a bad deploy. Fill the vars after ./scripts/local/up."
+required=(NORTHSTAR_RPC SETTLEMENT_RPC ADMIN_KEY ADMIN_ADDRESS TELEPORTER NORTHSTAR_BLOCKCHAIN_ID SETTLEMENT_BLOCKCHAIN_ID RELAYER)
+missing=0
+for var in "${required[@]}"; do
+  if [[ -z "${!var:-}" ]]; then
+    echo "Missing $var" >&2
+    missing=1
+  fi
+done
+if [[ "$missing" -eq 1 ]]; then
+  echo "Fill the vars from avalanche network status after ./scripts/local/up. RELAYER may be the zero address if Teleporter delivery is permissionless." >&2
   exit 1
 fi
 
-receiver=$(forge create "$ROOT/contracts/icm-demo/SettlementReceiver.sol:SettlementReceiver" \
+deployer=$(cast wallet address --private-key "$ADMIN_KEY")
+nonce=$(cast nonce "$deployer" --rpc-url "$NORTHSTAR_RPC")
+predicted_registry=$(cast compute-address "$deployer" --nonce "$nonce")
+echo "Predicted InstitutionalRegistry on Northstar: $predicted_registry (nonce $nonce)"
+
+receiver=$(forge create --root "$ROOT/contracts" src/SettlementReceiver.sol:SettlementReceiver \
   --rpc-url "$SETTLEMENT_RPC" \
   --private-key "$ADMIN_KEY" \
-  --constructor-args "${TELEPORTER:?}" \
+  --constructor-args "$TELEPORTER" "$NORTHSTAR_BLOCKCHAIN_ID" "$predicted_registry" \
   --json | jq -r '.deployedTo')
 
-registry=$(forge create "$ROOT/contracts/institutional-registry/InstitutionalRegistry.sol:InstitutionalRegistry" \
+registry=$(forge create --root "$ROOT/contracts" src/InstitutionalRegistry.sol:InstitutionalRegistry \
   --rpc-url "$NORTHSTAR_RPC" \
   --private-key "$ADMIN_KEY" \
-  --constructor-args "${TELEPORTER:?}" "${SETTLEMENT_BLOCKCHAIN_ID:?}" "$receiver" "${ADMIN_ADDRESS:?}" \
+  --constructor-args "$TELEPORTER" "$SETTLEMENT_BLOCKCHAIN_ID" "$receiver" "$ADMIN_ADDRESS" "$RELAYER" \
   --json | jq -r '.deployedTo')
 
+if [[ "$registry" != "$predicted_registry" ]]; then
+  echo "Registry landed at $registry, predicted $predicted_registry. Receiver will reject this origin. Aborting." >&2
+  exit 1
+fi
+
+mkdir -p "$ROOT/.data"
+printf 'RECEIVER=%s\nREGISTRY=%s\n' "$receiver" "$registry" > "$ROOT/.data/local-contracts.env"
 echo "SettlementReceiver=$receiver"
 echo "InstitutionalRegistry=$registry"
-printf 'RECEIVER=%s\nREGISTRY=%s\n' "$receiver" "$registry" > "$ROOT/.data/local-contracts.env"
 echo "Wrote .data/local-contracts.env"

@@ -1,14 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.25;
 
-import {ITeleporterMessenger, TeleporterMessageInput, TeleporterFeeInfo} from "../icm-demo/ITeleporterMessenger.sol";
+import {ITeleporterMessenger, TeleporterMessageInput, TeleporterFeeInfo} from "./interfaces/ITeleporterMessenger.sol";
 
 /// @title InstitutionalRegistry
 /// @notice Permissioned asset-approval registry on the Northstar L1.
-///         Approvals are local state and, optionally, an ICM message to Settlement.
+///         Relayer policy is explicit:
+///         - address(0): Teleporter-layer delivery is permissionless.
+///           Restrict that at the network, and say so.
+///         - non-zero: populate allowedRelayerAddresses with that one address.
 contract InstitutionalRegistry {
     error NotAdmin();
     error UnknownAsset();
+    error ZeroAddress();
+    error ZeroBlockchainID();
 
     event AssetRegistered(uint256 indexed assetId, string symbol);
     event AssetApproved(uint256 indexed assetId, bool approved, bytes32 messageId);
@@ -16,6 +21,7 @@ contract InstitutionalRegistry {
     ITeleporterMessenger public immutable teleporter;
     bytes32 public immutable settlementBlockchainID;
     address public immutable settlementReceiver;
+    address public immutable allowedRelayer;
     address public admin;
 
     mapping(uint256 => bool) public exists;
@@ -26,12 +32,18 @@ contract InstitutionalRegistry {
         address teleporterAddress,
         bytes32 settlementBlockchainID_,
         address settlementReceiver_,
-        address admin_
+        address admin_,
+        address allowedRelayer_
     ) {
+        if (teleporterAddress == address(0) || settlementReceiver_ == address(0) || admin_ == address(0)) {
+            revert ZeroAddress();
+        }
+        if (settlementBlockchainID_ == bytes32(0)) revert ZeroBlockchainID();
         teleporter = ITeleporterMessenger(teleporterAddress);
         settlementBlockchainID = settlementBlockchainID_;
         settlementReceiver = settlementReceiver_;
         admin = admin_;
+        allowedRelayer = allowedRelayer_;
     }
 
     modifier onlyAdmin() {
@@ -49,14 +61,20 @@ contract InstitutionalRegistry {
         if (!exists[assetId]) revert UnknownAsset();
         approved[assetId] = isApproved;
 
+        address[] memory relayers;
+        if (allowedRelayer != address(0)) {
+            relayers = new address[](1);
+            relayers[0] = allowedRelayer;
+        }
+
         messageId = teleporter.sendCrossChainMessage(
             TeleporterMessageInput({
                 destinationBlockchainID: settlementBlockchainID,
                 destinationAddress: settlementReceiver,
                 feeInfo: TeleporterFeeInfo({feeTokenAddress: address(0), amount: 0}),
                 requiredGasLimit: 300_000,
-                allowedRelayerAddresses: new address[](0),
-                message: abi.encode(assetId, isApproved, block.chainid)
+                allowedRelayerAddresses: relayers,
+                message: abi.encode(assetId, isApproved)
             })
         );
 

@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity 0.8.25;
+
+/// @notice Interface shape matches ava-labs/icm-contracts
+///         contracts/teleporter/ITeleporterMessenger.sol send path
+///         (fetched 2026-08-24). An empty allowedRelayerAddresses list
+///         means permissionless delivery at the Teleporter layer.
 
 struct TeleporterFeeInfo {
     address feeTokenAddress;
@@ -17,12 +22,4 @@ struct TeleporterMessageInput {
 
 interface ITeleporterMessenger {
     function sendCrossChainMessage(TeleporterMessageInput calldata messageInput) external returns (bytes32);
-}
-
-interface ITeleporterReceiver {
-    function receiveTeleporterMessage(
-        bytes32 sourceBlockchainID,
-        address originSenderAddress,
-        bytes calldata message
-    ) external;
 }

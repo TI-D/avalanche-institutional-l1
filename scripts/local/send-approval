@@ -16,5 +16,19 @@ cast send "${REGISTRY:?}" "registerAsset(uint256,string)" 82731 "NSTAR-NOTE" \
 cast send "$REGISTRY" "setApproval(uint256,bool)" 82731 true \
   --rpc-url "$NORTHSTAR_RPC" --private-key "$ADMIN_KEY"
 
-echo "Watch Settlement for ApprovalReceived. Relayer should deliver without a third-party bridge."
-cast logs --rpc-url "${SETTLEMENT_RPC:?}" --address "${RECEIVER:?}" | tail
+echo "Waiting for ApprovalReceived on Settlement. A printed send is not delivery."
+deadline=$((SECONDS + 120))
+found=0
+while [[ $SECONDS -lt $deadline ]]; do
+  if cast logs --rpc-url "${SETTLEMENT_RPC:?}" --address "${RECEIVER:?}" --from-block 0 2>/dev/null | grep -q .; then
+    found=1
+    break
+  fi
+  sleep 2
+done
+if [[ "$found" -ne 1 ]]; then
+  echo "No Settlement logs from $RECEIVER within 120s. Relayer or authorization failed." >&2
+  exit 1
+fi
+cast logs --rpc-url "$SETTLEMENT_RPC" --address "$RECEIVER" --from-block 0
+
