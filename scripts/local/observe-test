@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+# Prometheus scrape + alert during a real down target. Loki line for the drill. No Grafana. Not CloudWatch.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+export PATH="${NORTHSTAR_TOOLS:-$HOME/.cache/northstar-local-tools}/bin:$PATH"
+
+"$ROOT/scripts/local/install-tools"
+
+OUT="${EVIDENCE_DIR:-$ROOT/.data/sprint-5-8}/test-results"
+OBS="$ROOT/.data/observe"
+mkdir -p "$OUT" "$OBS"
+
+if ! curl -sS --max-time 3 -o "$OBS/primary-metrics.snip" http://127.0.0.1:9650/ext/metrics; then
+  echo "primary AvalancheGo metrics on :9650 are required" >&2
+  exit 1
+fi
+if ! grep -q '# HELP' "$OBS/primary-metrics.snip"; then
+  echo "primary /ext/metrics had no HELP lines" >&2
+  exit 1
+fi
+
+# Northstar HTTP is the drill target. It is already down after the recovery restore gap.
+if curl -sS --max-time 2 http://127.0.0.1:9654/ext/metrics >/dev/null 2>&1; then
+  echo "note: :9654 answered; alert still uses up{job=northstar}==0 when it flaps"
+fi
+
+cat >"$OBS/prometheus.yml" <<'YAML'
+global:
+  scrape_interval: 2s
+  evaluation_interval: 2s
+rule_files:
+  - alert.rules.yml
+scrape_configs:
+  - job_name: primary
+    metrics_path: /ext/metrics
+    static_configs:
+      - targets: ["127.0.0.1:9650"]
+  - job_name: settlement
+    metrics_path: /ext/metrics
+    static_configs:
+      - targets: ["127.0.0.1:9656"]
+  - job_name: northstar
+    metrics_path: /ext/metrics
+    static_configs:
+      - targets: ["127.0.0.1:9654"]
+YAML
+
+cat >"$OBS/alert.rules.yml" <<'YAML'
+groups:
+  - name: northstar-local
+    rules:
+      - alert: AvalancheGoDown
+        expr: up{job="northstar"} == 0
+        for: 4s
+        labels:
+          severity: page
+        annotations:
+          summary: Northstar AvalancheGo HTTP :9654 is down
+YAML
+
+cat >"$OBS/loki.yml" <<'YAML'
+auth_enabled: false
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: loki-data
+  storage:
+    filesystem:
+      chunks_directory: loki-data/chunks
+      rules_directory: loki-data/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+ingester:
+  wal:
+    dir: loki-data/wal
+YAML
+
+pkill -f "$OBS/prometheus.yml" 2>/dev/null || true
+pkill -f "$OBS/loki.yml" 2>/dev/null || true
+prometheus --config.file="$OBS/prometheus.yml" --storage.tsdb.path="$OBS/prom-data" \
+  --web.listen-address=127.0.0.1:9090 >/tmp/northstar-prom.log 2>&1 &
+PROM_PID=$!
+(cd "$OBS" && loki -config.file=loki.yml) >/tmp/northstar-loki.log 2>&1 &
+LOKI_PID=$!
+cleanup() {
+  kill "$PROM_PID" "$LOKI_PID" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+for _ in $(seq 1 40); do
+  curl -sS --max-time 1 http://127.0.0.1:9090/-/ready >/dev/null 2>&1 && break
+  sleep 0.2
+done
+curl -sS --max-time 2 http://127.0.0.1:9090/-/ready >/dev/null
+
+primary_up=""
+alert_json=""
+fired=0
+for _ in $(seq 1 20); do
+  primary_up="$(curl -sS --max-time 2 'http://127.0.0.1:9090/api/v1/query?query=up%7Bjob%3D%22primary%22%7D')"
+  alert_json="$(curl -sS --max-time 2 http://127.0.0.1:9090/api/v1/alerts)"
+  if echo "$alert_json" | grep -q AvalancheGoDown && echo "$alert_json" | grep -q firing; then
+    fired=1
+    break
+  fi
+  sleep 1
+done
+if [[ "$fired" -ne 1 ]]; then
+  echo "AvalancheGoDown did not fire" >&2
+  echo "$alert_json" >&2
+  cat /tmp/northstar-prom.log >&2
+  exit 1
+fi
+if ! echo "$primary_up" | grep -q '"value":\[.*,"1"\]'; then
+  echo "primary scrape was not up=1" >&2
+  echo "$primary_up" >&2
+  exit 1
+fi
+
+NOW_NS="$(python3 -c 'import time; print(int(time.time()*1e9))')"
+curl -sS -X POST -H 'content-type: application/json' \
+  --data "{\"streams\":[{\"stream\":{\"job\":\"northstar-drill\",\"alert\":\"AvalancheGoDown\"},\"values\":[[\"${NOW_NS}\",\"AvalancheGoDown fired: northstar :9654 down during local observe drill\"]]}]}" \
+  http://127.0.0.1:3100/loki/api/v1/push
+
+sleep 1
+LOKI_Q="$(curl -sS -G --data-urlencode 'query={alert="AvalancheGoDown"}' \
+  http://127.0.0.1:3100/loki/api/v1/query_range)"
+echo "$LOKI_Q" | grep -q AvalancheGoDown || { echo "loki query missed the drill line" >&2; echo "$LOKI_Q" >&2; exit 1; }
+
+python3 - <<'PY' "$OUT/observe.txt" "$primary_up" "$alert_json" "$LOKI_Q"
+import json, sys
+out, primary, alerts, loki = sys.argv[1:5]
+p = json.loads(primary)
+a = json.loads(alerts)
+l = json.loads(loki)
+line = ""
+if l.get("data", {}).get("result"):
+    line = l["data"]["result"][0]["values"][0][1]
+summary = {
+    "claim": "prometheus-loki-local",
+    "not": ["CloudWatch", "Grafana-dashboard"],
+    "primary_up": p["data"]["result"][0]["value"][1],
+    "alert": a["data"]["alerts"][0],
+    "loki_line": line,
+    "grafana": "not installed",
+}
+open(out, "w").write(json.dumps(summary, indent=2) + "\n")
+print(open(out).read(), end="")
+PY
+prometheus --version 2>&1 | head -1 | tee -a "$OUT/observe.txt"
+loki --version 2>&1 | head -1 | tee -a "$OUT/observe.txt"

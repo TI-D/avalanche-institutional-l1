@@ -1,4 +1,4 @@
-.PHONY: bootstrap check frontend-check contracts-check fmt-check local-up live-health lifecycle-test icm-test recovery-test
+.PHONY: bootstrap check frontend-check contracts-check fmt-check local-up live-health lifecycle-test icm-test recovery-test signer-test network-policy-test backup-test observe-test sprint-5-8
 
 bootstrap:
 	npm ci
@@ -39,3 +39,18 @@ icm-test:
 
 recovery-test:
 	./scripts/local/recovery-drill
+
+signer-test:
+	./scripts/local/signer-test
+
+network-policy-test:
+	./scripts/local/network-policy-test
+
+backup-test:
+	./scripts/local/backup-bao
+
+observe-test:
+	./scripts/local/observe-test
+
+sprint-5-8:
+	./scripts/local/record-sprint-5-8

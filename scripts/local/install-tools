@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Download local-substitute binaries. Not packaged in this repo. Not AWS.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+TOOLS="${NORTHSTAR_TOOLS:-$HOME/.cache/northstar-local-tools}"
+mkdir -p "$TOOLS/bin"
+export PATH="$TOOLS/bin:$PATH"
+
+link_bin() {
+  local name="$1" found
+  found="$(find "$TOOLS" -type f -name "$name" ! -path "$TOOLS/bin/*" | head -1)"
+  if [[ -z "$found" ]]; then
+    echo "could not find extracted $name under $TOOLS" >&2
+    return 1
+  fi
+  chmod +x "$found"
+  ln -sfn "$found" "$TOOLS/bin/$name"
+}
+
+if [[ ! -x "$TOOLS/bin/envoy" ]]; then
+  ENVOY_VER="${ENVOY_VER:-1.39.0}"
+  archive="$TOOLS/envoy-v${ENVOY_VER}-darwin-arm64.tar.xz"
+  curl -fL "https://github.com/tetratelabs/archive-envoy/releases/download/v${ENVOY_VER}/envoy-v${ENVOY_VER}-darwin-arm64.tar.xz" -o "$archive"
+  tar -xJf "$archive" -C "$TOOLS"
+  link_bin envoy
+fi
+
+if [[ ! -x "$TOOLS/bin/bao" ]]; then
+  BAO_VER="${BAO_VER:-2.6.2}"
+  archive="$TOOLS/openbao_${BAO_VER}_darwin_arm64.tar.gz"
+  curl -fL "https://github.com/openbao/openbao/releases/download/v${BAO_VER}/openbao_${BAO_VER}_darwin_arm64.tar.gz" -o "$archive"
+  mkdir -p "$TOOLS/openbao"
+  tar -xzf "$archive" -C "$TOOLS/openbao"
+  found="$(find "$TOOLS/openbao" -type f \( -name bao -o -name openbao \) | head -1)"
+  chmod +x "$found"
+  ln -sfn "$found" "$TOOLS/bin/bao"
+fi
+
+if [[ ! -x "$TOOLS/bin/restic" ]]; then
+  RESTIC_VER="${RESTIC_VER:-0.19.1}"
+  bz="$TOOLS/restic_${RESTIC_VER}_darwin_arm64.bz2"
+  curl -fL "https://github.com/restic/restic/releases/download/v${RESTIC_VER}/restic_${RESTIC_VER}_darwin_arm64.bz2" -o "$bz"
+  bunzip2 -fk "$bz"
+  src="${bz%.bz2}"
+  chmod +x "$src"
+  ln -sfn "$src" "$TOOLS/bin/restic"
+fi
+
+if [[ ! -x "$TOOLS/bin/prometheus" ]]; then
+  PROM_VER="${PROM_VER:-3.14.0}"
+  archive="$TOOLS/prometheus-${PROM_VER}.darwin-arm64.tar.gz"
+  curl -fL "https://github.com/prometheus/prometheus/releases/download/v${PROM_VER}/prometheus-${PROM_VER}.darwin-arm64.tar.gz" -o "$archive"
+  tar -xzf "$archive" -C "$TOOLS"
+  ln -sfn "$TOOLS/prometheus-${PROM_VER}.darwin-arm64/prometheus" "$TOOLS/bin/prometheus"
+fi
+
+if [[ ! -x "$TOOLS/bin/loki" ]]; then
+  LOKI_VER="${LOKI_VER:-3.7.6}"
+  zip="$TOOLS/loki-darwin-arm64.zip"
+  curl -fL "https://github.com/grafana/loki/releases/download/v${LOKI_VER}/loki-darwin-arm64.zip" -o "$zip"
+  mkdir -p "$TOOLS/loki-extract"
+  unzip -o "$zip" -d "$TOOLS/loki-extract" >/dev/null
+  found="$(find "$TOOLS/loki-extract" -type f -name 'loki-darwin-arm64' -o -name loki | head -1)"
+  chmod +x "$found"
+  ln -sfn "$found" "$TOOLS/bin/loki"
+fi
+
+echo "tools_ok"
+envoy --version 2>&1 | head -1
+bao version 2>&1 | head -1
+restic version
+prometheus --version 2>&1 | head -1
+loki --version 2>&1 | head -1

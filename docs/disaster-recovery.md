@@ -16,12 +16,8 @@ Neither RPO nor RTO has been measured.
 
 Three equal-weight validators may not tolerate one loss cleanly. Prefer five equal-weight validators for an N-1 demonstration.
 
-## Drill B: backup / restore (not executed)
+## Drill B: backup / restore (local restic path executed)
 
-1. Inventory staking TLS, BLS or remote-signer identity, config, and state.
-2. Write an encrypted per-validator blob with hashes and metadata.
-3. Fence the old host.
-4. Restore onto a replacement.
-5. Assert NodeID and BLS public key unchanged.
+Local substitute: `make backup-test`. OpenBao `-dev` Transit wraps the restic password. restic backups staking material extracted from a live `flags.json`. Restore hashes and NodeID matched `NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w`.
 
-`./scripts/backup` and `./scripts/restore` only stamp the Stage 1 JSON model. They are not this drill.
+This is not a host-replacement drill. It did not fence a running validator. `./scripts/backup` and `./scripts/restore` still only stamp the Stage 1 JSON model.

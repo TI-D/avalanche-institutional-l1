@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# Run Sprint 5-8 local substitutes and write evidence/runs/<utc>/.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+export PATH="${NORTHSTAR_TOOLS:-$HOME/.cache/northstar-local-tools}/bin:$HOME/bin:$PATH"
+
+if [[ -f "$ROOT/.data/local-rpc.env" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT/.data/local-rpc.env"
+fi
+
+run_id="${1:-$(date -u +%Y%m%dT%H%M%SZ)}"
+export EVIDENCE_DIR="$ROOT/evidence/runs/$run_id"
+mkdir -p "$EVIDENCE_DIR/test-results" "$EVIDENCE_DIR/logs"
+
+git -C "$ROOT" rev-parse HEAD >"$EVIDENCE_DIR/git-commit.txt"
+
+"$ROOT/scripts/local/install-tools"
+"$ROOT/scripts/local/signer-test"
+"$ROOT/scripts/local/network-policy-test"
+"$ROOT/scripts/local/backup-bao"
+"$ROOT/scripts/local/observe-test"
+
+{
+  echo "avalanche-cli $(avalanche --version 2>/dev/null | tr -d '\r' || true)"
+  if [[ -x "$HOME/.avalanche-cli/bin/avalanchego/avalanchego-v1.14.0/avalanchego" ]]; then
+    "$HOME/.avalanche-cli/bin/avalanchego/avalanchego-v1.14.0/avalanchego" --version
+  fi
+  echo "go $(go version)"
+  envoy --version 2>&1 | head -1
+  bao version 2>&1 | head -1
+  restic version
+  prometheus --version 2>&1 | head -1
+  loki --version 2>&1 | head -1
+} >"$EVIDENCE_DIR/versions.txt"
+
+avalanche network status --skip-update-check >"$EVIDENCE_DIR/logs/network-status.txt" 2>&1 || true
+
+ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+s_h="unavailable"
+if [[ -n "${SETTLEMENT_RPC:-}" ]] && command -v cast >/dev/null 2>&1; then
+  s_h="$(cast block-number --rpc-url "$SETTLEMENT_RPC" 2>/dev/null || echo unavailable)"
+fi
+n_h="down"
+if [[ -n "${NORTHSTAR_RPC:-}" ]] && command -v cast >/dev/null 2>&1; then
+  n_h="$(cast block-number --rpc-url "$NORTHSTAR_RPC" 2>/dev/null || echo down)"
+fi
+
+python3 - <<'PY' "$EVIDENCE_DIR" "$ROOT" "$n_h" "$s_h" "$ts"
+import hashlib, json, os, sys
+dest, root, n_h, s_h, ts = sys.argv[1:6]
+files = []
+for dirpath, _, names in os.walk(dest):
+    for name in names:
+        if name == "manifest.json":
+            continue
+        path = os.path.join(dirpath, name)
+        rel = os.path.relpath(path, dest)
+        files.append({"path": rel, "sha256": hashlib.sha256(open(path, "rb").read()).hexdigest()})
+files.sort(key=lambda row: row["path"])
+manifest = {
+    "id": os.path.basename(dest),
+    "recordedAt": ts,
+    "gitCommit": open(os.path.join(dest, "git-commit.txt")).read().strip(),
+    "mode": "locally-executed",
+    "network": "avalanche-cli local",
+    "claimsCovered": ["remote-signer", "network-policy", "backup-restore", "observability"],
+    "notClaimed": ["hardware-HSM", "AWS-SG", "AWS-KMS", "S3-Object-Lock", "CloudWatch", "Grafana"],
+    "rpc": {
+        "northstar": os.environ.get("NORTHSTAR_RPC"),
+        "settlement": os.environ.get("SETTLEMENT_RPC"),
+    },
+    "heightsAtRecord": {"northstar": n_h, "settlement": s_h},
+    "northstarNote": "Northstar HTTP :9654 was down during this run. Envoy fronted Settlement. Prometheus alerted on the down Northstar target.",
+    "versions": open(os.path.join(dest, "versions.txt")).read().strip().splitlines(),
+    "files": files,
+}
+with open(os.path.join(dest, "manifest.json"), "w") as f:
+    json.dump(manifest, f, indent=2)
+    f.write("\n")
+print(os.path.relpath(dest, root))
+PY

@@ -1,0 +1,8 @@
+avalanche-cli avalanche version 1.9.6
+avalanchego/1.14.0 [database=v1.4.5, rpcchainvm=44, commit=dce38e90b1542fafa3c2b8efa8ef864d7a370eb6, go=1.24.9]
+go go version go1.25.6 darwin/arm64
+
+OpenBao v2.6.2 (dd9c19c37a878cf4a81b18efb8d6f0599c7da923), committed 2026-08-18T15:48:05Z
+restic 0.19.1 compiled with go1.26.4 on darwin/arm64
+prometheus, version 3.14.0 (branch: HEAD, revision: d7598b7141418fa35be2b5ec5d0fefb634199610)
+loki, version 3.7.6 (branch: release-3.7.x, revision: 5003600d)

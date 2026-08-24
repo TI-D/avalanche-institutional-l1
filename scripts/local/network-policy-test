@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Envoy mTLS in front of a live local RPC. Not AWS SGs. Not ALB.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+export PATH="${NORTHSTAR_TOOLS:-$HOME/.cache/northstar-local-tools}/bin:$PATH"
+
+"$ROOT/scripts/local/install-tools"
+
+if [[ -f "$ROOT/.data/local-rpc.env" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT/.data/local-rpc.env"
+fi
+
+UPSTREAM_PORT="${MTLS_UPSTREAM_PORT:-9656}"
+RPC_PATH="${MTLS_RPC_PATH:-/ext/bc/${SETTLEMENT_BLOCKCHAIN_ID_CB58:-tNyQpowhpZZ543tbgmVARz5Tc5dVHWRP8PUgw531dXSYdmmJ2}/rpc}"
+CERT_DIR="${MTLS_CERT_DIR:-$ROOT/.data/mtls}"
+OUT="${EVIDENCE_DIR:-$ROOT/.data/sprint-5-8}/test-results"
+mkdir -p "$CERT_DIR" "$OUT"
+
+if [[ ! -f "$CERT_DIR/ca.crt" ]]; then
+  openssl req -x509 -newkey rsa:2048 -nodes -days 2 -subj "/CN=northstar-local-ca" \
+    -keyout "$CERT_DIR/ca.key" -out "$CERT_DIR/ca.crt"
+  openssl req -newkey rsa:2048 -nodes -subj "/CN=127.0.0.1" \
+    -keyout "$CERT_DIR/server.key" -out "$CERT_DIR/server.csr"
+  openssl x509 -req -days 2 -in "$CERT_DIR/server.csr" -CA "$CERT_DIR/ca.crt" -CAkey "$CERT_DIR/ca.key" \
+    -CAcreateserial -out "$CERT_DIR/server.crt" -extfile <(printf "subjectAltName=IP:127.0.0.1,DNS:localhost")
+  openssl req -newkey rsa:2048 -nodes -subj "/CN=northstar-operator" \
+    -keyout "$CERT_DIR/client.key" -out "$CERT_DIR/client.csr"
+  openssl x509 -req -days 2 -in "$CERT_DIR/client.csr" -CA "$CERT_DIR/ca.crt" -CAkey "$CERT_DIR/ca.key" \
+    -CAcreateserial -out "$CERT_DIR/client.crt"
+fi
+
+cfg="$CERT_DIR/envoy.yaml"
+sed -e "s|CERT_DIR|$CERT_DIR|g" -e "s|UPSTREAM_PORT|$UPSTREAM_PORT|g" \
+  "$ROOT/scripts/local/mtls/envoy.yaml" >"$cfg"
+
+if ! curl -sS --max-time 3 -X POST -H 'content-type: application/json' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}' \
+  "http://127.0.0.1:${UPSTREAM_PORT}${RPC_PATH}" | grep -q result; then
+  echo "upstream RPC on :$UPSTREAM_PORT is down. Envoy in front of a missing chain is still a simulator." >&2
+  exit 1
+fi
+
+pkill -f "$cfg" 2>/dev/null || true
+envoy -c "$cfg" --log-level warning >/tmp/northstar-envoy.log 2>&1 &
+ENVOY_PID=$!
+cleanup() { kill "$ENVOY_PID" 2>/dev/null || true; }
+trap cleanup EXIT
+
+ok=0
+for _ in $(seq 1 30); do
+  if curl -sS --max-time 1 http://127.0.0.1:9901/ready >/dev/null 2>&1; then
+    ok=1
+    break
+  fi
+  sleep 0.2
+done
+if [[ "$ok" -ne 1 ]]; then
+  echo "envoy did not become ready" >&2
+  cat /tmp/northstar-envoy.log >&2 || true
+  exit 1
+fi
+
+URL="https://127.0.0.1:9443${RPC_PATH}"
+BODY='{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
+
+set +e
+NOCERT="$(curl -skS --max-time 5 -o /tmp/mtls-nocert.body -w '%{http_code}:%{errormsg}' \
+  -X POST -H 'content-type: application/json' --data "$BODY" "$URL" 2>&1)"
+NOCERT_EC=$?
+set -e
+if [[ "$NOCERT_EC" -eq 0 ]] && grep -q result /tmp/mtls-nocert.body 2>/dev/null; then
+  echo "UNEXPECTED: RPC succeeded without a client certificate" >&2
+  exit 1
+fi
+
+WITHCERT="$(curl --cacert "$CERT_DIR/ca.crt" --cert "$CERT_DIR/client.crt" --key "$CERT_DIR/client.key" \
+  -sS --max-time 5 -X POST -H 'content-type: application/json' --data "$BODY" "$URL")"
+echo "$WITHCERT" | grep -q result || { echo "mTLS client call failed: $WITHCERT" >&2; exit 1; }
+
+{
+  echo "claim=envoy-mtls-rpc"
+  echo "not=AWS-SG ALB NLB"
+  echo "upstream=127.0.0.1:${UPSTREAM_PORT}${RPC_PATH}"
+  echo "listen=127.0.0.1:9443"
+  echo "without_client_cert=${NOCERT}"
+  echo "without_client_cert_exit=${NOCERT_EC}"
+  echo "with_client_cert=${WITHCERT}"
+  echo "envoy_pid=${ENVOY_PID}"
+  envoy --version 2>&1 | head -1
+} | tee "$OUT/mtls.txt"

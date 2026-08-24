@@ -1,0 +1,5 @@
+claim=remote-bls-signer-prototype
+not=HSM-backed Cubist AWS-Nitro
+attached_to_cli_validators=no
+ok  	github.com/TI-D/avalanche-institutional-l1/signer	0.274s
+key_stays_in_signer_process=yes

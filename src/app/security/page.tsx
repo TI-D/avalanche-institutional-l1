@@ -11,8 +11,8 @@ export default function SecurityPage() {
       lede="Developer-friendly defaults are the wrong default. The intended design isolates validators, allowlists RPC, and keeps signing keys off operator laptops. The Terraform in this repo does not yet implement that design."
       evidence={{
         level: "source-written",
-        title: "Nothing here is implemented and tested.",
-        note: "Modules are an unvalidated skeleton. Secrets are still designed as files on disk. Backup IAM is too wide. See docs/aws-kit-gaps.md.",
+        title: "AWS modules are still an unvalidated skeleton.",
+        note: "Local substitutes (Envoy mTLS, gRPC signer, Prometheus/Loki, OpenBao+restic) are on /readiness. They are not AWS SG, ALB, CloudHSM, or CloudWatch.",
       }}
     >
       <Section title="Source written, not applied">
@@ -22,7 +22,7 @@ export default function SecurityPage() {
           <li>A jump-host security group exists. No jump host is provisioned. SSM is not configured.</li>
           <li>Encrypted EBS and a versioned S3 backup bucket are sketched. Every validator role can read every backup object with the shared KMS key.</li>
           <li>Ansible would drop TLS and BLS files under /etc/avalanchego/staking. That contradicts any claim that secrets are not files on disk.</li>
-          <li>Monitoring is one EC2 instance and a disconnected CloudWatch log group. There is no Prometheus, Grafana, or alert.</li>
+          <li>AWS monitoring is still one EC2 placeholder and a disconnected CloudWatch log group. Local Prometheus and Loki ran in Sprint 5-8. There is no Grafana and no CloudWatch proof.</li>
         </ul>
       </Section>
       <Section title="Designed, not built">

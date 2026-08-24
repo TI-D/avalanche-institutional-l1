@@ -1,0 +1,62 @@
+# Envoy mTLS in front of a local AvalancheGo HTTP listener.
+# Not an ALB. Not an AWS security group.
+static_resources:
+  listeners:
+    - name: mtls_rpc
+      address:
+        socket_address:
+          address: 127.0.0.1
+          port_value: 9443
+      filter_chains:
+        - transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+              require_client_certificate: true
+              common_tls_context:
+                tls_certificates:
+                  - certificate_chain:
+                      filename: CERT_DIR/server.crt
+                    private_key:
+                      filename: CERT_DIR/server.key
+                validation_context:
+                  trusted_ca:
+                    filename: CERT_DIR/ca.crt
+          filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: mtls_rpc
+                codec_type: AUTO
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: avalanche
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: avalanche_http
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+  clusters:
+    - name: avalanche_http
+      connect_timeout: 2s
+      type: STATIC
+      load_assignment:
+        cluster_name: avalanche_http
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: UPSTREAM_PORT
+admin:
+  address:
+    socket_address:
+      address: 127.0.0.1
+      port_value: 9901

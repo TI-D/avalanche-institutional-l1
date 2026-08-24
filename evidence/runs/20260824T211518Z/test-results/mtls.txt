@@ -1,0 +1,10 @@
+claim=envoy-mtls-rpc
+not=AWS-SG ALB NLB
+upstream=127.0.0.1:9656/ext/bc/tNyQpowhpZZ543tbgmVARz5Tc5dVHWRP8PUgw531dXSYdmmJ2/rpc
+listen=127.0.0.1:9443
+without_client_cert=curl: (56) LibreSSL SSL_read: LibreSSL/3.3.6: error:1404C45C:SSL routines:ST_OK:reason(1116), errno 0
+000:LibreSSL SSL_read: LibreSSL/3.3.6: error:1404C45C:SSL routines:ST_OK:reason(1116), errno 0
+without_client_cert_exit=56
+with_client_cert={"jsonrpc":"2.0","id":1,"result":"0xb"}
+envoy_pid=31915
+

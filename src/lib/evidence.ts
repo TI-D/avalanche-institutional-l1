@@ -80,9 +80,23 @@ export const capabilities: Capability[] = [
   {
     id: "backup-restore",
     name: "Backup and restore",
-    level: "modeled",
-    notes: "./scripts/backup and ./scripts/restore stamp timestamps on the JSON model. No staking files are copied.",
-    evidence: "scripts/backup",
+    level: "locally-executed",
+    notes: "OpenBao -dev Transit wrapped the restic password. restic backup/restore of Settlement staking material matched sha256 and NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w. Not AWS KMS / S3. ./scripts/backup is still the JSON model.",
+    evidence: "evidence/runs/20260824T211518Z/test-results/backup.txt",
+  },
+  {
+    id: "remote-signer",
+    name: "Remote BLS signer prototype",
+    level: "locally-executed",
+    notes: "Go gRPC server implements AvalancheGo signer.proto. Official rpcsigner client verified Sign and SignProofOfPossession. Key stayed in the signer process. Not HSM. Not attached to CLI validators.",
+    evidence: "evidence/runs/20260824T211518Z/test-results/signer.txt",
+  },
+  {
+    id: "network-policy",
+    name: "Restricted peers + mTLS RPC",
+    level: "locally-executed",
+    notes: "Envoy 1.39.0 on 127.0.0.1:9443 required a client cert. curl without a cert failed. curl with the client cert returned Settlement eth_blockNumber. Not AWS security groups. Not ALB.",
+    evidence: "evidence/runs/20260824T211518Z/test-results/mtls.txt",
   },
   {
     id: "recovery-drill",
@@ -94,15 +108,15 @@ export const capabilities: Capability[] = [
   {
     id: "observability",
     name: "Metrics, logs, alerts",
-    level: "source-written",
-    notes: "One EC2 placeholder and a CloudWatch log group. No scrape config, dashboard, or alert.",
-    evidence: "terraform/monitoring/main.tf",
+    level: "locally-executed",
+    notes: "Prometheus 3.14.0 scraped primary :9650 /ext/metrics (up=1). Alert AvalancheGoDown fired on northstar :9654 (already down). Loki 3.7.6 ingested that drill line. No Grafana. Terraform CloudWatch placeholder is unused.",
+    evidence: "evidence/runs/20260824T211518Z/test-results/observe.txt",
   },
   {
     id: "hsm",
-    name: "Remote BLS / HSM signing",
+    name: "Hardware HSM custody",
     level: "source-written",
-    notes: "Design notes only. TLS/NodeID custody and BLS signing are different key paths. Neither is wired.",
+    notes: "Not implemented. The local gRPC signer is a separate row. No CloudHSM, Cubist, or Nitro enclave.",
     evidence: "docs/production-readiness.md",
   },
   {

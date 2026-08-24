@@ -8,11 +8,11 @@ export default function RecoveryPage() {
     <DocPage
       kicker="Disaster recovery"
       title="A restore is not proven until the NodeID is the same and height advances."
-      lede="The intended drill is to fence a dead validator, restore its staking identity, and show the same NodeID catching up. The table below is a hypothesis for that drill, not a measurement."
+      lede="A 1-of-1 host kill/restore already ran on Northstar. A restic restore of Settlement staking files already matched NodeID. Neither is AWS, and neither is a 5-validator quorum."
       evidence={{
-        level: "modeled",
-        title: "No backup file exists. No process has been killed.",
-        note: "./scripts/backup writes a timestamp on the JSON model. Avalanche consensus is not a generic 2/3 quorum. Health must be accepted height and acceptance latency.",
+        level: "locally-executed",
+        title: "Host restore and restic restore have artifacts. Console backup is still JSON.",
+        note: "Kill/restore: evidence/runs/20260824T202726Z. OpenBao+restic: make backup-test. ./scripts/backup still only stamps the Stage 1 JSON model.",
       }}
     >
       <Section title="Intended failure drill">
@@ -59,9 +59,15 @@ export default function RecoveryPage() {
           Rebuild must reuse the same NodeID and BLS key. Before that process starts, fence the old host so the identity cannot come back twice. Generating a new key during an outage creates a fourth identity the P-Chain does not know.
         </p>
       </Section>
-      <Section title="Backup and restore, when they exist">
+      <Section title="Local restic substitute">
         <p>
-          A real backup copies staking TLS, the BLS signer material or remote-signer identity, node config, and enough state to resync. It records hashes, encryption metadata, and which validator the blob belongs to. Restore verifies those hashes, fences the previous host, and checks NodeID equality before the node is allowed to advertise.
+          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">make backup-test</code>{" "}
+          uses OpenBao <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">-dev</code> Transit
+          to wrap a restic password, then backups staking material from a live{" "}
+          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">flags.json</code>.
+          Restore hashes and NodeID matched{" "}
+          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w</code>.
+          That is not a host-replacement drill and not AWS KMS / S3 Object Lock.
         </p>
       </Section>
       <Section title="What the Stage 1 buttons do">

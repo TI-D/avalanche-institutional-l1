@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# OpenBao Transit wraps the restic password. Backup real staking material. Not AWS KMS / S3.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+export PATH="${NORTHSTAR_TOOLS:-$HOME/.cache/northstar-local-tools}/bin:$PATH"
+
+"$ROOT/scripts/local/install-tools"
+
+OUT="${EVIDENCE_DIR:-$ROOT/.data/sprint-5-8}/test-results"
+WORKDIR="$ROOT/.data/backup-bao"
+SNAP="$WORKDIR/staking-src"
+RESTORE="$WORKDIR/restore"
+REPO="$WORKDIR/restic-repo"
+mkdir -p "$OUT" "$SNAP" "$RESTORE"
+
+FLAGS="${STAKING_FLAGS:-$HOME/.avalanche-cli/local/settlement-local-node-local-network/NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w/flags.json}"
+if [[ ! -f "$FLAGS" ]]; then
+  echo "staking flags.json not found: $FLAGS" >&2
+  exit 1
+fi
+
+python3 - "$FLAGS" "$SNAP" <<'PY'
+import base64, json, os, sys
+flags_path, dest = sys.argv[1:3]
+flags = json.load(open(flags_path))
+os.makedirs(dest, exist_ok=True)
+mapping = {
+    "staker.crt": "staking-tls-cert-file-content",
+    "staker.key": "staking-tls-key-file-content",
+    "signer.key": "staking-signer-key-file-content",
+}
+for name, key in mapping.items():
+    raw = flags.get(key)
+    if not raw:
+        raise SystemExit(f"missing {key} in {flags_path}")
+    data = base64.b64decode(raw)
+    path = os.path.join(dest, name)
+    with open(path, "wb") as f:
+        f.write(data)
+    os.chmod(path, 0o600)
+print("extracted", dest)
+PY
+
+EXPECTED_NODE="$(basename "$(dirname "$FLAGS")")"
+GOT_NODE="$(cd "$ROOT/signer" && go run ./cmd/nodeidfromcert "$SNAP/staker.crt")"
+if [[ "$GOT_NODE" != "$EXPECTED_NODE" ]]; then
+  echo "NodeID from cert $GOT_NODE != $EXPECTED_NODE" >&2
+  exit 1
+fi
+
+SRC_CRT="$(shasum -a 256 "$SNAP/staker.crt" | awk '{print $1}')"
+SRC_KEY="$(shasum -a 256 "$SNAP/staker.key" | awk '{print $1}')"
+
+pkill -f "bao server -dev" 2>/dev/null || true
+export BAO_ADDR="http://127.0.0.1:8200"
+export BAO_TOKEN="root"
+bao server -dev -dev-listen-address=127.0.0.1:8200 -dev-root-token-id=root \
+  >/tmp/northstar-bao.log 2>&1 &
+BAO_PID=$!
+cleanup() { kill "$BAO_PID" 2>/dev/null || true; }
+trap cleanup EXIT
+
+ok=0
+for _ in $(seq 1 40); do
+  if bao status >/dev/null 2>&1; then
+    ok=1
+    break
+  fi
+  sleep 0.2
+done
+[[ "$ok" -eq 1 ]] || { echo "openbao did not start" >&2; cat /tmp/northstar-bao.log >&2; exit 1; }
+
+bao secrets enable transit >/dev/null
+bao write -f transit/keys/northstar-backup >/dev/null
+PASSWORD="$(openssl rand -hex 32)"
+CT="$(bao write -field=ciphertext transit/encrypt/northstar-backup plaintext="$(printf '%s' "$PASSWORD" | base64)")"
+PLAIN="$(bao write -field=plaintext transit/decrypt/northstar-backup ciphertext="$CT" | base64 -D)"
+if [[ "$PLAIN" != "$PASSWORD" ]]; then
+  echo "transit decrypt mismatch" >&2
+  exit 1
+fi
+
+rm -rf "$REPO" "$RESTORE"
+mkdir -p "$REPO" "$RESTORE"
+export RESTIC_PASSWORD="$PLAIN"
+restic -r "$REPO" init
+restic -r "$REPO" backup "$SNAP"
+restic -r "$REPO" restore latest --target "$RESTORE"
+
+RESTORED="$(find "$RESTORE" -name staker.crt | head -1)"
+REST_DIR="$(dirname "$RESTORED")"
+REST_CRT="$(shasum -a 256 "$REST_DIR/staker.crt" | awk '{print $1}')"
+REST_KEY="$(shasum -a 256 "$REST_DIR/staker.key" | awk '{print $1}')"
+REST_NODE="$(cd "$ROOT/signer" && go run ./cmd/nodeidfromcert "$REST_DIR/staker.crt")"
+if [[ "$REST_CRT" != "$SRC_CRT" || "$REST_KEY" != "$SRC_KEY" || "$REST_NODE" != "$EXPECTED_NODE" ]]; then
+  echo "restore mismatch crt=$REST_CRT key=$REST_KEY node=$REST_NODE" >&2
+  exit 1
+fi
+
+{
+  echo "claim=openbao-transit-restic-backup"
+  echo "not=AWS-KMS CloudHSM S3-Object-Lock"
+  echo "source_flags=$FLAGS"
+  echo "node_id=$EXPECTED_NODE"
+  echo "staker_crt_sha256=$SRC_CRT"
+  echo "staker_key_sha256=$SRC_KEY"
+  echo "restore_node_id=$REST_NODE"
+  echo "restore_match=yes"
+  echo "transit_ciphertext=$CT"
+  echo "restic_repo=$REPO (gitignored)"
+  echo "scripts/backup_was_not_used=yes"
+  bao version 2>&1 | head -1
+  restic version
+} | tee "$OUT/backup.txt"

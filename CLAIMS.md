@@ -14,12 +14,13 @@ This file is the human-readable index. `/readiness` renders the same levels. A r
 | Validator add/remove on P-Chain | locally-executed | `make lifecycle-test NODE_ID=...` | `evidence/runs/20260824T202726Z/transactions.json` | Needs a live signature-aggregator at 127.0.0.1:9092. CLI `signatureAggregator start` did not stay up. |
 | ICM AssetApproved delivery | locally-executed | `make icm-test` | `evidence/runs/20260824T202726Z/transactions.json` | Relayer must stay running. First 120s wait failed because CLI start died. |
 | Host-failure restore, same NodeID | locally-executed | `make recovery-test` | `evidence/runs/20260824T202726Z/transactions.json` | 1-of-1: kill stalls that L1. Restored NodeID-CNhskLG4ridbbTh2rDVjuTNEWfP2cFmwT. Not a quorum. |
-| Remote BLS signer prototype | source-written | signer tests | none | Not HSM-backed |
-| Restricted peers + mTLS RPC | source-written | `make network-policy-test` | none | Not AWS security groups |
-| Prometheus/Grafana/Loki | source-written | alert during a drill | none | No scrape pipeline |
+| Remote BLS signer prototype | locally-executed | `make signer-test` | `evidence/runs/20260824T211518Z/test-results/signer.txt` | Local gRPC + avalanchego localsigner. Not HSM. Not attached to CLI validators. |
+| Restricted peers + mTLS RPC | locally-executed | `make network-policy-test` | `evidence/runs/20260824T211518Z/test-results/mtls.txt` | Envoy on 127.0.0.1:9443 in front of Settlement :9656. Not AWS SGs. Not ALB. |
+| OpenBao Transit + restic staking backup | locally-executed | `make backup-test` | `evidence/runs/20260824T211518Z/test-results/backup.txt` | Restored NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w. Not AWS KMS / S3. `./scripts/backup` is still the JSON model. |
+| Prometheus + Loki (no Grafana) | locally-executed | `make observe-test` | `evidence/runs/20260824T211518Z/test-results/observe.txt` | Scraped :9650 `/ext/metrics`. `AvalancheGoDown` fired because Northstar :9654 is down. Loki ingested that line. No Grafana. |
 | AWS deployment | source-written | `terraform fmt -check` | `docs/aws-kit-gaps.md` | Never applied |
-| Hardware HSM custody | not implemented | — | — | Needs real hardware |
-| Production / regulated customer | not implemented | — | — | Fictional engagement |
+| Hardware HSM custody | not implemented | n/a | n/a | Needs real hardware |
+| Production / regulated customer | not implemented | n/a | n/a | Fictional engagement |
 
 ## What this repo will call things
 
@@ -28,9 +29,9 @@ This file is the human-readable index. `/readiness` renders the same levels. A r
 | Locally executed | Production-ready |
 | Remote BLS signer prototype | HSM-backed |
 | Linux namespaces / containers | AWS VPC |
-| Envoy mTLS (when built) | ALB / NLB |
-| OpenBao Transit (when built) | AWS KMS / CloudHSM |
-| Restic encrypted repo (when built) | S3 Object Lock |
+| Envoy mTLS (local) | ALB / NLB |
+| OpenBao Transit (local -dev) | AWS KMS / CloudHSM |
+| Restic encrypted repo (local) | S3 Object Lock |
 
 ## Zero-cost sequence (reconciled)
 
@@ -42,8 +43,8 @@ Sprint 3: real validator lifecycle + resumable operator path.
 
 Sprint 4: live ICM through the already-tested contracts.
 
-Sprint 5–8: signer prototype, backup/restore, restricted networks, observability. Local substitutes only.
+Sprint 5-8: locally executed. See `docs/sprint-5-8-local.md` and `evidence/runs/20260824T211518Z/`.
 
 Sprint 9: second overlay (Meridian) after the kit has been used once for real.
 
-Do not start Sprint 5–9 until Sprint 2 produces advancing block heights. A proxy and a dashboard in front of a missing chain is still a simulator.
+Do not start Sprint 5-9 until Sprint 2 produces advancing block heights. A proxy and a dashboard in front of a missing chain is still a simulator.

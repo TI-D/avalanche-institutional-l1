@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Remote BLS signer prototype. Not HSM-backed. Not attached to CLI validators.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+OUT="${EVIDENCE_DIR:-$ROOT/.data/sprint-5-8}/test-results"
+mkdir -p "$OUT"
+{
+  echo "claim=remote-bls-signer-prototype"
+  echo "not=HSM-backed Cubist AWS-Nitro"
+  echo "attached_to_cli_validators=no"
+  (cd "$ROOT/signer" && go test -count=1 -timeout 60s .)
+  echo "key_stays_in_signer_process=yes"
+} | tee "$OUT/signer.txt"

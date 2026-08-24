@@ -1,0 +1,70 @@
+{
+  "id": "20260824T211518Z",
+  "recordedAt": "2026-08-24T21:15:39Z",
+  "gitCommit": "044afa73ffa68ab23ec4fcdf8b1c7305cb8e7c16",
+  "mode": "locally-executed",
+  "network": "avalanche-cli local",
+  "claimsCovered": [
+    "remote-signer",
+    "network-policy",
+    "backup-restore",
+    "observability"
+  ],
+  "notClaimed": [
+    "hardware-HSM",
+    "AWS-SG",
+    "AWS-KMS",
+    "S3-Object-Lock",
+    "CloudWatch",
+    "Grafana"
+  ],
+  "rpc": {
+    "northstar": "http://127.0.0.1:9654/ext/bc/2DX5Pd6zzSsHeqDCAvuDUeLAsVu5aKeLXXckuCXj2B5F13m8AQ/rpc",
+    "settlement": "http://127.0.0.1:9656/ext/bc/tNyQpowhpZZ543tbgmVARz5Tc5dVHWRP8PUgw531dXSYdmmJ2/rpc"
+  },
+  "heightsAtRecord": {
+    "northstar": "down",
+    "settlement": "11"
+  },
+  "northstarNote": "Northstar HTTP :9654 was down during this run. Envoy fronted Settlement. Prometheus alerted on the down Northstar target.",
+  "versions": [
+    "avalanche-cli avalanche version 1.9.6",
+    "avalanchego/1.14.0 [database=v1.4.5, rpcchainvm=44, commit=dce38e90b1542fafa3c2b8efa8ef864d7a370eb6, go=1.24.9]",
+    "go go version go1.25.6 darwin/arm64",
+    "",
+    "OpenBao v2.6.2 (dd9c19c37a878cf4a81b18efb8d6f0599c7da923), committed 2026-08-18T15:48:05Z",
+    "restic 0.19.1 compiled with go1.26.4 on darwin/arm64",
+    "prometheus, version 3.14.0 (branch: HEAD, revision: d7598b7141418fa35be2b5ec5d0fefb634199610)",
+    "loki, version 3.7.6 (branch: release-3.7.x, revision: 5003600d)"
+  ],
+  "files": [
+    {
+      "path": "git-commit.txt",
+      "sha256": "0d50660ac2c55185fd26d071aac89fa4985f362901d0b74b1948fb41b30084c0"
+    },
+    {
+      "path": "logs/network-status.txt",
+      "sha256": "188cbddee4d3e85d12833b527e1af33ca63ef58b1ae88aeae792151f052f2a36"
+    },
+    {
+      "path": "test-results/backup.txt",
+      "sha256": "83ebd5dd41bc8cb38793d7e3186f4b1ba7232cc6c3ec55a8da0eba16d5cc53ab"
+    },
+    {
+      "path": "test-results/mtls.txt",
+      "sha256": "d1203832e7c4871df9e866074b9cb8da13cb31e22cea6fe007bc49848db16fab"
+    },
+    {
+      "path": "test-results/observe.txt",
+      "sha256": "2b8256c36c86077b2b483f87176ccc02e21b60d82acfcbed95fb1b622b6d703f"
+    },
+    {
+      "path": "test-results/signer.txt",
+      "sha256": "a5f9494044c3ae9b1b34cab72358c7be255524879697294cb963b3b7d1e77514"
+    },
+    {
+      "path": "versions.txt",
+      "sha256": "100777a64b77e0f92c44117b02069a386c0e0e1ff28791225e569c2f8f7a2f87"
+    }
+  ]
+}

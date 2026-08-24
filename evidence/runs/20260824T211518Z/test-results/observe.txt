@@ -1,0 +1,26 @@
+{
+  "claim": "prometheus-loki-local",
+  "not": [
+    "CloudWatch",
+    "Grafana-dashboard"
+  ],
+  "primary_up": "1",
+  "alert": {
+    "labels": {
+      "alertname": "AvalancheGoDown",
+      "instance": "127.0.0.1:9654",
+      "job": "northstar",
+      "severity": "page"
+    },
+    "annotations": {
+      "summary": "Northstar AvalancheGo HTTP :9654 is down"
+    },
+    "state": "firing",
+    "activeAt": "2026-08-24T21:15:28.634913814Z",
+    "value": "0e+00"
+  },
+  "loki_line": "AvalancheGoDown fired: northstar :9654 down during local observe drill",
+  "grafana": "not installed"
+}
+prometheus, version 3.14.0 (branch: HEAD, revision: d7598b7141418fa35be2b5ec5d0fefb634199610)
+loki, version 3.7.6 (branch: release-3.7.x, revision: 5003600d)

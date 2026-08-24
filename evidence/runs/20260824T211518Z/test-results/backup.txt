@@ -1,0 +1,13 @@
+claim=openbao-transit-restic-backup
+not=AWS-KMS CloudHSM S3-Object-Lock
+source_flags=/Users/trueindustries/.avalanche-cli/local/settlement-local-node-local-network/NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w/flags.json
+node_id=NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w
+staker_crt_sha256=03b3e5e88c64d76b85b65cc373b37c766e8e5d124936ed9c1a7ad3d5b885cfe5
+staker_key_sha256=42784143bdfa628265f218a670895350ababdc4e26a2782355f4cacc2198732a
+restore_node_id=NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w
+restore_match=yes
+transit_ciphertext=vault:v1:1+erYvFKGvbeztuiFWkTgzMwrc61z759Nsb+fHbe4BJS5vIF9vI7Zr8+gQ9VHs7hM4RXFVpxz/T6+4PgJ1eUvk80tsQAYNL2qfRZpJoMZfPDXIGZTM2r9KsYv0Q=
+restic_repo=/Users/trueindustries/Documents/documents.nosync/Websites/avalanche-institutional-l1/.data/backup-bao/restic-repo (gitignored)
+scripts/backup_was_not_used=yes
+OpenBao v2.6.2 (dd9c19c37a878cf4a81b18efb8d6f0599c7da923), committed 2026-08-18T15:48:05Z
+restic 0.19.1 compiled with go1.26.4 on darwin/arm64

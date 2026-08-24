@@ -16,3 +16,10 @@ These are the versions this repo intends to use. They are not evidence that thos
 | Subnet-EVM | v0.8.0 | local `avalanche blockchain create --latest` |
 | ICM relayer | icm-relayer-v1.7.4 | started by local deploy |
 | ICM contracts | interface shape fetched 2026-08-24 from ava-labs/icm-contracts main | contracts/src/interfaces/ |
+| Go (signer module) | 1.25.6 local / go 1.24.0 in signer/go.mod | `make signer-test` |
+| AvalancheGo (module pin) | v1.14.0 | signer/go.mod |
+| Envoy | 1.39.0 | `make network-policy-test` |
+| OpenBao | 2.6.2 | `make backup-test` |
+| restic | 0.19.1 | `make backup-test` |
+| Prometheus | 3.14.0 | `make observe-test` |
+| Loki | 3.7.6 | `make observe-test` |
