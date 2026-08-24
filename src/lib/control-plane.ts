@@ -1,88 +1,22 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import type {
+  Action,
+  ControlPlane,
+  IcmMessage,
+  OpsEvent,
+  Validator,
+} from "@/lib/control-plane-types";
 
-export type ValidatorStatus =
-  | "healthy"
-  | "registering"
-  | "removing"
-  | "degraded"
-  | "destroyed"
-  | "offline";
-
-export type Validator = {
-  id: string;
-  name: string;
-  nodeId: string;
-  blsPublicKey: string;
-  weight: number;
-  az: string;
-  status: ValidatorStatus;
-  role: "validator";
-};
-
-export type IcmMessage = {
-  id: string;
-  source: "northstar";
-  destination: "settlement";
-  assetId: number;
-  approved: boolean;
-  stage:
-    | "origin-signed"
-    | "bls-aggregated"
-    | "relayed"
-    | "destination-verified";
-  createdAt: string;
-};
-
-export type OpsEvent = {
-  id: string;
-  at: string;
-  level: "info" | "warn" | "error" | "success";
-  title: string;
-  detail: string;
-};
-
-export type ControlPlane = {
-  network: {
-    customer: string;
-    l1Name: string;
-    evmChainId: number;
-    subnetId: string;
-    blockchainId: string;
-    latestBlock: number;
-    consensus: "healthy" | "degraded";
-    rpc: "operational" | "degraded" | "down";
-  };
-  validators: Validator[];
-  validatorManager: {
-    address: string;
-    mode: "PoA";
-    active: number;
-  };
-  icm: {
-    connected: boolean;
-    teleporter: string;
-    relayer: "connected" | "degraded";
-    lastMessage: IcmMessage | null;
-    messages: IcmMessage[];
-  };
-  recovery: {
-    lastBackupAt: string | null;
-    lastRestoreAt: string | null;
-    lastFailureDrill: "passed" | "failed" | "not-run";
-  };
-  events: OpsEvent[];
-};
-
-export type Action =
-  | "add-validator"
-  | "remove-validator"
-  | "destroy-validator"
-  | "restore-validator"
-  | "send-icm"
-  | "backup"
-  | "restore-backup"
-  | "reset";
+export type {
+  Action,
+  ControlPlane,
+  ControlPlanePayload,
+  IcmMessage,
+  OpsEvent,
+  Validator,
+  ValidatorStatus,
+} from "@/lib/control-plane-types";
 
 const STATE_PATH = process.env.CONTROL_PLANE_STATE ?? "/tmp/northstar-control-plane.json";
 
@@ -112,39 +46,6 @@ function event(level: OpsEvent["level"], title: string, detail: string): OpsEven
 }
 
 export function initialState(): ControlPlane {
-  const validators: Validator[] = [
-    {
-      id: "v1",
-      name: "Validator 1",
-      nodeId: "NodeID-NS1A4mN8qT2wK7cY3rH9bE5aF0dU6xV",
-      blsPublicKey: "0x4a91c2e0b8d7f35a1c60e9d2b4f8a7c3",
-      weight: 100,
-      az: "us-east-1a",
-      status: "healthy",
-      role: "validator",
-    },
-    {
-      id: "v2",
-      name: "Validator 2",
-      nodeId: "NodeID-NS2B5nP9rU3xL8dZ4sJ0cF6bG1eV7yW",
-      blsPublicKey: "0x7c03d1f9a6e248b0d52f1c8a3e7b6d04",
-      weight: 100,
-      az: "us-east-1b",
-      status: "healthy",
-      role: "validator",
-    },
-    {
-      id: "v3",
-      name: "Validator 3",
-      nodeId: "NodeID-NS3C6oQ0sV4yM9eA5tK1dG7cH2fW8zX",
-      blsPublicKey: "0x1e58a0c7d4b936f2e81a0d9c6f3b5e17",
-      weight: 100,
-      az: "us-east-1c",
-      status: "healthy",
-      role: "validator",
-    },
-  ];
-
   return {
     network: {
       customer: "Northstar Capital",
@@ -156,7 +57,38 @@ export function initialState(): ControlPlane {
       consensus: "healthy",
       rpc: "operational",
     },
-    validators,
+    validators: [
+      {
+        id: "v1",
+        name: "Validator 1",
+        nodeId: "NodeID-NS1A4mN8qT2wK7cY3rH9bE5aF0dU6xV",
+        blsPublicKey: "0x4a91c2e0b8d7f35a1c60e9d2b4f8a7c3",
+        weight: 100,
+        az: "us-east-1a",
+        status: "healthy",
+        role: "validator",
+      },
+      {
+        id: "v2",
+        name: "Validator 2",
+        nodeId: "NodeID-NS2B5nP9rU3xL8dZ4sJ0cF6bG1eV7yW",
+        blsPublicKey: "0x7c03d1f9a6e248b0d52f1c8a3e7b6d04",
+        weight: 100,
+        az: "us-east-1b",
+        status: "healthy",
+        role: "validator",
+      },
+      {
+        id: "v3",
+        name: "Validator 3",
+        nodeId: "NodeID-NS3C6oQ0sV4yM9eA5tK1dG7cH2fW8zX",
+        blsPublicKey: "0x1e58a0c7d4b936f2e81a0d9c6f3b5e17",
+        weight: 100,
+        az: "us-east-1c",
+        status: "healthy",
+        role: "validator",
+      },
+    ],
     validatorManager: {
       address: "0xfacade0000000000000000000000000000000001",
       mode: "PoA",
@@ -192,10 +124,7 @@ function persist(state: ControlPlane) {
 export function readState(): ControlPlane {
   try {
     const raw = readFileSync(/* turbopackIgnore: true */ STATE_PATH, "utf8");
-    const parsed = JSON.parse(raw) as ControlPlane;
-    parsed.network.latestBlock += 1;
-    persist(parsed);
-    return parsed;
+    return JSON.parse(raw) as ControlPlane;
   } catch {
     const fresh = initialState();
     persist(fresh);
@@ -211,8 +140,8 @@ function recompute(state: ControlPlane) {
   const healthy = healthyCount(state);
   state.validatorManager.active = healthy;
   state.network.consensus = healthy >= 2 ? "healthy" : "degraded";
-  state.network.rpc = healthy >= 1 ? "operational" : "down";
-  if (healthy < 2) state.network.rpc = "degraded";
+  state.network.rpc = healthy >= 1 ? (healthy >= 2 ? "operational" : "degraded") : "down";
+  state.network.latestBlock += 1;
 }
 
 function pushEvent(state: ControlPlane, evt: OpsEvent) {
@@ -220,14 +149,15 @@ function pushEvent(state: ControlPlane, evt: OpsEvent) {
 }
 
 export function applyAction(action: Action, validatorId?: string): ControlPlane {
+  if (action === "reset") {
+    const fresh = initialState();
+    persist(fresh);
+    return fresh;
+  }
+
   const state = readState();
 
   switch (action) {
-    case "reset": {
-      const fresh = initialState();
-      persist(fresh);
-      return fresh;
-    }
     case "add-validator": {
       if (state.validators.some((v) => v.id === "v4")) {
         pushEvent(
@@ -236,40 +166,28 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
         );
         break;
       }
-      const pending = { ...V4, status: "registering" as const };
-      state.validators.push(pending);
       pushEvent(
         state,
         event(
           "info",
           "PoAManager.initiateValidatorRegistration",
-          "ValidatorManager constructed RegisterL1ValidatorMessage. Waiting on BLS aggregation and P-Chain RegisterL1ValidatorTx."
+          "ValidatorManager constructed RegisterL1ValidatorMessage. BLS aggregation and P-Chain RegisterL1ValidatorTx follow."
         )
       );
-      persist(state);
-      setTimeout(() => {
-        const next = readState();
-        const v = next.validators.find((item) => item.id === "v4");
-        if (v) v.status = "healthy";
-        recompute(next);
-        pushEvent(
-          next,
-          event(
-            "success",
-            "P-Chain registration complete",
-            "L1ValidatorRegistrationMessage delivered. completeValidatorRegistration() finalized Validator 4. Set is now 4/4."
-          )
-        );
-        persist(next);
-      }, 1600);
-      recompute(state);
-      return state;
+      state.validators.push({ ...V4, status: "healthy" });
+      pushEvent(
+        state,
+        event(
+          "success",
+          "P-Chain registration complete",
+          "L1ValidatorRegistrationMessage delivered. completeValidatorRegistration() finalized Validator 4. Set is now 4/4."
+        )
+      );
+      break;
     }
     case "remove-validator": {
       const target = state.validators.find((v) => v.id === (validatorId ?? "v2"));
       if (!target) break;
-      if (target.status === "removing") break;
-      target.status = "removing";
       pushEvent(
         state,
         event(
@@ -278,30 +196,22 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
           `${target.name} weight set to 0. SetL1ValidatorWeightTx submitted to P-Chain.`
         )
       );
-      persist(state);
-      setTimeout(() => {
-        const next = readState();
-        next.validators = next.validators.filter((v) => v.id !== target.id);
-        recompute(next);
-        pushEvent(
-          next,
-          event(
-            "success",
-            "Validator removed",
-            `${target.name} acknowledged by P-Chain via L1ValidatorRegistrationMessage(valid=0). Network remains healthy.`
-          )
-        );
-        persist(next);
-      }, 1600);
-      recompute(state);
-      return state;
+      state.validators = state.validators.filter((v) => v.id !== target.id);
+      pushEvent(
+        state,
+        event(
+          "success",
+          "Validator removed",
+          `${target.name} acknowledged by P-Chain via L1ValidatorRegistrationMessage(valid=0). Network remains healthy.`
+        )
+      );
+      break;
     }
     case "destroy-validator": {
       const target = state.validators.find((v) => v.id === (validatorId ?? "v2"));
       if (!target) break;
       target.status = "destroyed";
       state.recovery.lastFailureDrill = "failed";
-      recompute(state);
       pushEvent(
         state,
         event(
@@ -321,7 +231,6 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
       target.status = "healthy";
       state.recovery.lastFailureDrill = "passed";
       state.recovery.lastRestoreAt = now();
-      recompute(state);
       pushEvent(
         state,
         event(
@@ -339,7 +248,7 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
         destination: "settlement",
         assetId: 82731,
         approved: true,
-        stage: "origin-signed",
+        stage: "destination-verified",
         createdAt: now(),
       };
       state.icm.lastMessage = message;
@@ -349,33 +258,34 @@ export function applyAction(action: Action, validatorId?: string): ControlPlane 
         event(
           "info",
           "AssetApproved signed on Northstar L1",
-          `assetId=82731 approved=true. TeleporterMessenger.sendCrossChainMessage() emitted. Origin validators are signing the Warp message.`
+          "assetId=82731 approved=true. TeleporterMessenger.sendCrossChainMessage() emitted."
         )
       );
-      persist(state);
-      const stages = ["bls-aggregated", "relayed", "destination-verified"] as const;
-      stages.forEach((stage, index) => {
-        setTimeout(() => {
-          const next = readState();
-          const found = next.icm.messages.find((m) => m.id === message.id);
-          if (!found) return;
-          found.stage = stage;
-          next.icm.lastMessage = found;
-          const titles = {
-            "bls-aggregated": "BLS signatures aggregated",
-            relayed: "Relayer delivered to Settlement L1",
-            "destination-verified": "ApprovalReceived on Settlement L1",
-          } as const;
-          const details = {
-            "bls-aggregated": "Quorum of Northstar validator BLS signatures aggregated into a single Warp multi-signature.",
-            relayed: "ICM relayer submitted receiveCrossChainMessage on Settlement. No extra trust assumption beyond the origin validator set.",
-            "destination-verified": "Settlement decoded AssetApproved { assetId: 82731, approved: true } and emitted ApprovalReceived.",
-          } as const;
-          pushEvent(next, event(stage === "destination-verified" ? "success" : "info", titles[stage], details[stage]));
-          persist(next);
-        }, 900 * (index + 1));
-      });
-      return state;
+      pushEvent(
+        state,
+        event(
+          "info",
+          "BLS signatures aggregated",
+          "Quorum of Northstar validator BLS signatures aggregated into a single Warp multi-signature."
+        )
+      );
+      pushEvent(
+        state,
+        event(
+          "info",
+          "Relayer delivered to Settlement L1",
+          "ICM relayer submitted receiveCrossChainMessage on Settlement. No extra trust assumption beyond the origin validator set."
+        )
+      );
+      pushEvent(
+        state,
+        event(
+          "success",
+          "ApprovalReceived on Settlement L1",
+          "Settlement decoded AssetApproved { assetId: 82731, approved: true } and emitted ApprovalReceived."
+        )
+      );
+      break;
     }
     case "backup": {
       state.recovery.lastBackupAt = now();
@@ -419,7 +329,17 @@ export function summarize(state: ControlPlane) {
     rpc: state.network.rpc,
     latestBlock: state.network.latestBlock,
     validatorManager: `${state.validatorManager.active} active`,
-    icm: state.icm.lastMessage?.stage === "destination-verified" ? "message received" : state.icm.connected ? "connected" : "down",
+    icm:
+      state.icm.lastMessage?.stage === "destination-verified"
+        ? "message received"
+        : state.icm.connected
+          ? "connected"
+          : "down",
     recovery: state.recovery.lastFailureDrill === "passed" ? "passed" : state.recovery.lastFailureDrill,
   };
+}
+
+export function snapshot() {
+  const state = readState();
+  return { state, summary: summarize(state) };
 }

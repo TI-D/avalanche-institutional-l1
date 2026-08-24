@@ -1,11 +1,7 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { runDemoAction } from "@/app/status/actions";
 import { Badge } from "@/components/ui/badge";
-import type { Action, ControlPlane } from "@/lib/control-plane";
-
-type Payload = { state: ControlPlane; summary: Record<string, string | number> };
+import { Button } from "@/components/ui/button";
+import type { Action, ControlPlanePayload } from "@/lib/control-plane-types";
 
 const actions: {
   action: Action;
@@ -23,74 +19,16 @@ const actions: {
 ];
 
 function tone(status: string) {
-  if (["healthy", "operational", "connected", "passed", "destination-verified"].includes(status)) {
+  if (["healthy", "operational", "connected", "passed", "destination-verified", "success"].includes(status)) {
     return "bg-emerald-500";
   }
-  if (["registering", "removing", "degraded", "origin-signed", "bls-aggregated", "relayed"].includes(status)) {
+  if (["registering", "removing", "degraded", "origin-signed", "bls-aggregated", "relayed", "info"].includes(status)) {
     return "bg-amber-400";
   }
   return "bg-[#E84142]";
 }
 
-export function OpsConsole() {
-  const [data, setData] = useState<Payload | null>(null);
-  const [pending, setPending] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const hasData = useRef(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    const tick = async () => {
-      try {
-        const res = await fetch("/api/control-plane", { cache: "no-store" });
-        if (!res.ok) throw new Error("Control plane unavailable");
-        const payload = (await res.json()) as Payload;
-        if (!cancelled) {
-          hasData.current = true;
-          setData(payload);
-        }
-      } catch (err) {
-        if (!cancelled && !hasData.current) {
-          setError(err instanceof Error ? err.message : "Control plane unavailable");
-        }
-      }
-    };
-    const id = window.setInterval(() => {
-      void tick();
-    }, 1200);
-    void tick();
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
-  }, []);
-
-  async function run(action: Action) {
-    setPending(action);
-    setError(null);
-    try {
-      const res = await fetch("/api/control-plane", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action, validatorId: "v2" }),
-      });
-      if (!res.ok) throw new Error("Action failed");
-      setData((await res.json()) as Payload);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Action failed");
-    } finally {
-      setPending(null);
-    }
-  }
-
-  if (!data) {
-    return (
-      <div className="rounded-2xl border border-white/8 bg-[#101012] p-8 text-sm text-zinc-400">
-        {error ?? "Connecting to the Northstar control plane..."}
-      </div>
-    );
-  }
-
+export function OpsConsole({ data }: { data: ControlPlanePayload }) {
   const { state, summary } = data;
   const cards = [
     ["Network", summary.validators],
@@ -153,18 +91,15 @@ export function OpsConsole() {
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {actions.map((item) => (
-                <Button
-                  key={item.action}
-                  size="sm"
-                  variant={item.variant ?? "default"}
-                  disabled={pending === item.action}
-                  onClick={() => run(item.action)}
-                >
-                  {pending === item.action ? "Working..." : item.label}
-                </Button>
+                <form key={item.action} action={runDemoAction}>
+                  <input type="hidden" name="action" value={item.action} />
+                  <input type="hidden" name="validatorId" value="v2" />
+                  <Button type="submit" size="sm" variant={item.variant ?? "default"}>
+                    {item.label}
+                  </Button>
+                </form>
               ))}
             </div>
-            {error ? <p className="mt-3 text-sm text-[#E84142]">{error}</p> : null}
           </div>
 
           <div className="rounded-2xl border border-white/8 bg-[#101012] p-5">
@@ -201,7 +136,7 @@ export function OpsConsole() {
           {state.events.map((evt) => (
             <li key={evt.id} className="px-5 py-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className={`size-1.5 rounded-full ${tone(evt.level === "success" ? "healthy" : evt.level === "info" ? "registering" : "destroyed")}`} />
+                <span className={`size-1.5 rounded-full ${tone(evt.level)}`} />
                 <span className="text-sm font-medium">{evt.title}</span>
                 <span className="text-[11px] text-zinc-500">{new Date(evt.at).toLocaleTimeString()}</span>
               </div>
