@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Stage 2: create Northstar and Settlement L1 configs. Does not deploy.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+
+if avalanche blockchain describe "$northstar" >/dev/null 2>&1; then
+  echo "Config $northstar already exists."
+else
+  avalanche blockchain create "$northstar" \
+    --evm --latest --proof-of-authority \
+    --evm-chain-id 431271 --evm-token NSTAR --evm-defaults
+fi
+
+if avalanche blockchain describe "$settlement" >/dev/null 2>&1; then
+  echo "Config $settlement already exists."
+else
+  avalanche blockchain create "$settlement" \
+    --evm --latest --proof-of-authority \
+    --evm-chain-id 431272 --evm-token SETL --evm-defaults
+fi
+
+echo "Configs ready. Next: ./scripts/local/up"

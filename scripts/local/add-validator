@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Stage 2: real PoA add through ValidatorManager + P-Chain.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+avalanche blockchain addValidator "$northstar" --local "$@"
+avalanche blockchain validators "$northstar" --local

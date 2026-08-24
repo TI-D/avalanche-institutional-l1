@@ -4,16 +4,16 @@ import { DocPage } from "@/components/doc-page";
 export const metadata: Metadata = { title: "Production readiness" };
 
 const rows = [
-  ["Multi-validator topology and health model", "Implemented", "Local control plane + IaC modules"],
-  ["Restricted RPC / validator split", "Implemented", "Terraform SG + network modules"],
-  ["ValidatorManager lifecycle scripts", "Implemented", "Modeled against ACP-77/99; live L1 needs funded Fuji keys"],
-  ["ICM AssetApproved path", "Implemented", "Contracts + console trace; relayer binary is documented"],
-  ["Staking-key backup / restore", "Implemented", "Scripts + Terraform backup bucket"],
-  ["Ansible hardening", "Implemented", "sshd, auditd, upgrades, listening surface"],
-  ["Observability skeleton", "Implemented", "Prometheus / Grafana module"],
-  ["KMS envelope encryption", "Implemented", "Terraform CMKs for disks, backups, secrets"],
+  ["Stage 1: site, kit, operator model", "Shipped", "Docs, Terraform/Ansible modules, contracts, JSON control-plane console"],
+  ["Stage 2: local AvalancheGo L1s", "Planned, scripts ready", "avalanche-cli northstar + settlement. Not booted in this environment yet"],
+  ["Stage 3: Fuji / production go-live", "Plan only", "docs/stage-3-go-live.md. No cloud apply, no mainnet txs"],
+  ["Multi-validator topology and health model", "Stage 1 model / Stage 2 live", "Console is a model until local RPC is wired"],
+  ["ValidatorManager lifecycle", "Stage 1 modeled / Stage 2 real CLI", "addValidator against local P-Chain is the Stage 2 proof"],
+  ["ICM AssetApproved path", "Contracts written / Stage 2 executes", "Relayer is CLI-managed on the local network"],
+  ["Terraform + Ansible", "Written, not applied", "Stage 3 dress rehearsal is the first apply"],
+  ["KMS envelope encryption", "Written in Terraform", "Stage 3. No AWS account attached"],
   ["CloudHSM remote signing", "Designed", "See docs/production-readiness.md"],
-  ["Dual-control PoA owner", "Designed", "2-of-3 hardware keys, not shipped"],
+  ["Dual-control PoA owner", "Designed", "2-of-3 hardware keys, Stage 3 requirement"],
   ["SIEM / packet capture retention", "Designed", "Institution-owned, not this repo"],
   ["Independent pentest", "Designed", "Out of scope for the reference"],
 ];

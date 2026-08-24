@@ -19,7 +19,7 @@ The documentation site is the portfolio surface. The Terraform, Ansible, contrac
 5. ICM: `AssetApproved { assetId: 82731 }` on Northstar becomes `ApprovalReceived` on Settlement
 6. Productization: customer-specific Northstar work extracted into this kit
 
-Implemented versus designed is explicit in `docs/production-readiness.md`.
+Honesty is staged. Stage 1 is shipped (site + kit + control-plane model). Stage 2 is a real local AvalancheGo network (`docs/stage-2-local.md`). Stage 3 is the customer go-live plan (`docs/stage-3-go-live.md`). Do not collapse them.
 
 ## Run the documentation site and ops console
 
@@ -28,7 +28,7 @@ npm install
 npm run dev
 ```
 
-The console at `/status` drives a local control-plane model of the ValidatorManager / P-Chain / ICM flow. Operator scripts talk to the same API:
+The console at `/status` is Stage 1: a control-plane model. Operator scripts talk to that API:
 
 ```bash
 ./scripts/health
@@ -50,7 +50,14 @@ runbooks/      failure, replacement, upgrade, incident
 src/           Avalanche-branded documentation site + ops console
 ```
 
-Cloud apply is **not** the default. `./scripts/deploy cloud` prints the Terraform + Ansible path. It requires your own AWS credentials and a funded Fuji deployer key.
+Stage 2 (local AvalancheGo, $0 protocol cost):
+
+```bash
+./scripts/local/create-l1s
+./scripts/local/up
+```
+
+Stage 3 (live customer) is a plan, not a command. `./scripts/deploy cloud` only prints the Terraform + Ansible path.
 
 ## Interview version
 

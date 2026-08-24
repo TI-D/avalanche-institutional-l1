@@ -129,8 +129,8 @@ export default function Home() {
             <Link href="/kit" className={cn(buttonVariants())}>
               See the deployment kit
             </Link>
-            <Link href="/readiness" className={cn(buttonVariants({ variant: "outline" }))}>
-              Implemented vs designed
+            <Link href="/stages" className={cn(buttonVariants({ variant: "outline" }))}>
+              Stage 2 and 3
             </Link>
           </div>
         </div>

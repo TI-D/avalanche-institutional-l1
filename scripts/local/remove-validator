@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Stage 2: real PoA remove. Requires --node-id of the validator leaving.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+if [[ -z "${1:-}" && -z "${NODE_ID:-}" ]]; then
+  echo "Usage: ./scripts/local/remove-validator NodeID-..."
+  exit 1
+fi
+avalanche blockchain removeValidator "$northstar" --local --node-id "${1:-$NODE_ID}"
+avalanche blockchain validators "$northstar" --local

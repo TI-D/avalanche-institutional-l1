@@ -20,6 +20,9 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-zinc-400">
+          <Link href="/stages" className="hover:text-white">
+            Stages
+          </Link>
           <Link href="/readiness" className="hover:text-white">
             Implemented vs designed
           </Link>

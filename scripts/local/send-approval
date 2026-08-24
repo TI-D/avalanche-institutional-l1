@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Stage 2: send AssetApproved { assetId: 82731 } Northstar -> Settlement.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+if ! command -v cast >/dev/null 2>&1; then
+  echo "cast is required."
+  exit 1
+fi
+
+# shellcheck disable=SC1091
+source "$ROOT/.data/local-contracts.env"
+
+cast send "${REGISTRY:?}" "registerAsset(uint256,string)" 82731 "NSTAR-NOTE" \
+  --rpc-url "${NORTHSTAR_RPC:?}" --private-key "${ADMIN_KEY:?}"
+cast send "$REGISTRY" "setApproval(uint256,bool)" 82731 true \
+  --rpc-url "$NORTHSTAR_RPC" --private-key "$ADMIN_KEY"
+
+echo "Watch Settlement for ApprovalReceived. Relayer should deliver without a third-party bridge."
+cast logs --rpc-url "${SETTLEMENT_RPC:?}" --address "${RECEIVER:?}" | tail

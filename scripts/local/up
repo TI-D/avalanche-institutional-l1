@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Stage 2: deploy both L1s to the local Avalanche network and start the relayer.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+
+avalanche blockchain deploy "$northstar" --local
+avalanche blockchain deploy "$settlement" --local
+avalanche interchain relayer start --local || true
+avalanche network status
+
+echo "Local Primary Network + Northstar + Settlement are up."
+echo "Next: ./scripts/local/deploy-contracts"

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Stage 2: deploy InstitutionalRegistry on Northstar and SettlementReceiver on Settlement.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+
+if ! command -v forge >/dev/null 2>&1; then
+  echo "Foundry is required (forge/cast). https://book.getfoundry.sh/getting-started/installation"
+  exit 1
+fi
+
+rpc_file="$HOME/.avalanche-cli/runs/network.status.json"
+echo "Read RPC URLs from avalanche network status / CLI describe output."
+echo "Set NORTHSTAR_RPC and SETTLEMENT_RPC, plus TELEPORTER, SETTLEMENT_BLOCKCHAIN_ID, ADMIN_KEY."
+echo
+echo "Example:"
+echo "  forge create contracts/icm-demo/SettlementReceiver.sol:SettlementReceiver \\"
+echo "    --rpc-url \"\$SETTLEMENT_RPC\" --private-key \"\$ADMIN_KEY\" --constructor-args \"\$TELEPORTER\""
+echo "  forge create contracts/institutional-registry/InstitutionalRegistry.sol:InstitutionalRegistry \\"
+echo "    --rpc-url \"\$NORTHSTAR_RPC\" --private-key \"\$ADMIN_KEY\" \\"
+echo "    --constructor-args \"\$TELEPORTER\" \"\$SETTLEMENT_BLOCKCHAIN_ID\" \"\$RECEIVER\" \"\$ADMIN_ADDRESS\""
+
+if [[ -z "${NORTHSTAR_RPC:-}" || -z "${SETTLEMENT_RPC:-}" || -z "${ADMIN_KEY:-}" ]]; then
+  echo
+  echo "Env not set. Stopping before a bad deploy. Fill the vars after ./scripts/local/up."
+  exit 1
+fi
+
+receiver=$(forge create "$ROOT/contracts/icm-demo/SettlementReceiver.sol:SettlementReceiver" \
+  --rpc-url "$SETTLEMENT_RPC" \
+  --private-key "$ADMIN_KEY" \
+  --constructor-args "${TELEPORTER:?}" \
+  --json | jq -r '.deployedTo')
+
+registry=$(forge create "$ROOT/contracts/institutional-registry/InstitutionalRegistry.sol:InstitutionalRegistry" \
+  --rpc-url "$NORTHSTAR_RPC" \
+  --private-key "$ADMIN_KEY" \
+  --constructor-args "${TELEPORTER:?}" "${SETTLEMENT_BLOCKCHAIN_ID:?}" "$receiver" "${ADMIN_ADDRESS:?}" \
+  --json | jq -r '.deployedTo')
+
+echo "SettlementReceiver=$receiver"
+echo "InstitutionalRegistry=$registry"
+printf 'RECEIVER=%s\nREGISTRY=%s\n' "$receiver" "$registry" > "$ROOT/.data/local-contracts.env"
+echo "Wrote .data/local-contracts.env"

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Stage 2 failure drill. Kill a local AvalancheGo pid. Do not remove it from ValidatorManager.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+index="${1:-2}"
+echo "List AvalancheGo processes, then stop the one you labeled validator $index."
+pgrep -af avalanchego || true
+echo
+echo "Example: kill \$(pgrep -f 'avalanchego.*data-dir.*node$index')"
+echo "Then: ./scripts/local/health"
+echo "The P-Chain identity must still exist. This is destroy, not remove."
