@@ -16,31 +16,31 @@ const proofs = [
   {
     n: "02",
     title: "Validator lifecycle",
-    body: "Documented: initiate/complete registration, two BLS aggregation contexts, weight-zero removal. No P-Chain transaction has been submitted from this repo.",
+    body: "Documented and then run locally: RegisterL1ValidatorTx and SetL1ValidatorWeightTx are in evidence/runs/20260824T202726Z. Stage 1 ./scripts/add-validator is still JSON.",
     href: "/validators",
   },
   {
     n: "03",
     title: "Institutional security",
-    body: "Source-written Terraform and Ansible plus an honest gap list. Isolation, HSM, and SIEM are not demonstrated.",
+    body: "AWS Terraform is still an unvalidated skeleton. Local substitutes (Envoy mTLS, gRPC signer, Prometheus/Loki, OpenBao+restic) are on /readiness. Hardware HSM is not implemented.",
     href: "/security",
   },
   {
     n: "04",
     title: "Failure and recovery",
-    body: "The intended drill is: fence the old host, restore the same NodeID, measure accepted height. That drill has not been executed.",
+    body: "Host kill/restore ran on Northstar (same NodeID). restic restore matched Settlement staking files. Console backup is still the JSON model.",
     href: "/recovery",
   },
   {
     n: "05",
     title: "Interchain messaging",
-    body: "Contracts now reject unauthorized origins and record a relayer policy. Foundry tests exist. Live Teleporter delivery is Stage 2.",
+    body: "Foundry still covers auth. Live setApproval(82731) produced Settlement ApprovalReceived. Relayer had to stay up as a process.",
     href: "/icm",
   },
   {
     n: "06",
     title: "Reusable kit",
-    body: "Folder layout and a customer-overlay idea. Reuse is not proven. A second institution overlay does not exist yet.",
+    body: "Northstar and Meridian overlays live under overlays/. Same create/deploy scripts. Terraform apply has not been run.",
     href: "/kit",
   },
 ];
@@ -60,8 +60,8 @@ export default function Home() {
           Northstar Capital is a fictional regulated asset manager. This repo is the engagement packet and kit skeleton for that request: private EVM L1, restricted operators, recoverable validators, one ICM approval to a Settlement L1.
         </p>
         <div className="mt-8">
-          <EvidenceBanner level="modeled" title="Stage 1 is a JSON model. It does not run AvalancheGo.">
-            The cards below are evidence labels, not network health. Consensus, recovery, and validator counts are not measured. Stage 2 is the first time those claims can become real.
+          <EvidenceBanner level="locally-executed" title="Stage 2 ran on this laptop. The Stage 1 console is still a JSON model.">
+            Heights, P-Chain add/remove, ICM delivery, and a same-NodeID restore have artifacts. Vercel never hosts the chain. Hardware HSM and AWS apply are not implemented.
           </EvidenceBanner>
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
@@ -74,10 +74,10 @@ export default function Home() {
         </div>
         <dl className="mt-12 grid gap-4 sm:grid-cols-4">
           {[
-            ["Evidence mode", "Stage 1 model"],
-            ["AvalancheGo", "Not running"],
-            ["P-Chain txs", "None"],
-            ["Recovery drill", "Not executed"],
+            ["Evidence mode", "Locally executed"],
+            ["AvalancheGo", "Local CLI net"],
+            ["P-Chain txs", "Add + remove"],
+            ["Recovery drill", "Same NodeID"],
           ].map(([k, v]) => (
             <div key={k} className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-4">
               <dt className="text-[11px] tracking-[0.16em] text-zinc-500 uppercase">{k}</dt>
@@ -129,7 +129,7 @@ export default function Home() {
             Ambiguous request. Then working infrastructure. Then a reusable kit.
           </h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-300">
-            Stage 1 covered the request, the architecture, and the kit skeleton. The middle of the loop (a running local L1, real validator txs, a measured restore) is Stage 2 and is not done. I will not write as if that middle already happened.
+            Stage 1 is the request, architecture, and kit skeleton. Stage 2 ran locally. Sprint 5-8 are local substitutes. Sprint 9 is the Meridian overlay. The Stage 1 console buttons still only write JSON.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/stages" className={cn(buttonVariants())}>

@@ -1,6 +1,6 @@
 variable "name" {
-  type    = string
-  default = "northstar-l1"
+  type        = string
+  description = "L1 name from the customer overlay. Do not bake a customer into the module default."
 }
 
 variable "region" {
@@ -9,13 +9,13 @@ variable "region" {
 }
 
 variable "vpc_cidr" {
-  type    = string
-  default = "10.64.0.0/16"
+  type        = string
+  description = "Customer VPC CIDR from the overlay."
 }
 
 variable "operator_cidrs" {
   type        = list(string)
-  description = "Northstar operator and jump CIDRs. Never 0.0.0.0/0."
+  description = "Operator and jump CIDRs from the overlay. Never 0.0.0.0/0."
 }
 
 variable "validator_count" {
@@ -33,10 +33,6 @@ variable "backup_bucket_name" {
 }
 
 variable "tags" {
-  type = map(string)
-  default = {
-    Customer    = "northstar-capital"
-    Environment = "reference"
-    System      = "avalanche-l1"
-  }
+  type        = map(string)
+  description = "Must include Customer from the overlay. Kit modules do not default to Northstar."
 }

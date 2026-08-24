@@ -1,0 +1,40 @@
+{
+  "customer": "northstar-capital",
+  "displayName": "Northstar Capital",
+  "l1s": [
+    {
+      "name": "northstar",
+      "evmChainId": 431271,
+      "token": "NSTAR",
+      "icmAssetId": 82731,
+      "role": "origin"
+    },
+    {
+      "name": "settlement",
+      "evmChainId": 431272,
+      "token": "SETL",
+      "icmAssetId": null,
+      "role": "destination"
+    }
+  ],
+  "poaOwnerLocal": "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC",
+  "poaOwnerIntended": {
+    "note": "2-of-3 officer set. Not issued. Local create uses ewoq.",
+    "roles": ["cto", "ciso", "head-of-ops"]
+  },
+  "aws": {
+    "name": "northstar-l1",
+    "region": "us-east-1",
+    "vpcCidr": "10.64.0.0/16",
+    "operatorCidrs": ["10.64.10.0/24"],
+    "validatorCount": 5,
+    "amiId": "ami-unspecified",
+    "backupBucketName": "northstar-l1-staking-backup",
+    "tags": {
+      "Customer": "northstar-capital",
+      "Environment": "reference",
+      "System": "avalanche-l1"
+    }
+  },
+  "notClaimed": ["AWS apply", "Fuji", "HSM"]
+}

@@ -18,6 +18,7 @@ This file is the human-readable index. `/readiness` renders the same levels. A r
 | Restricted peers + mTLS RPC | locally-executed | `make network-policy-test` | `evidence/runs/20260824T211518Z/test-results/mtls.txt` | Envoy on 127.0.0.1:9443 in front of Settlement :9656. Not AWS SGs. Not ALB. |
 | OpenBao Transit + restic staking backup | locally-executed | `make backup-test` | `evidence/runs/20260824T211518Z/test-results/backup.txt` | Restored NodeID-BgLdV9zWyYUp6jp4RkxoDMvuMo6h8bj2w. Not AWS KMS / S3. `./scripts/backup` is still the JSON model. |
 | Prometheus + Loki (no Grafana) | locally-executed | `make observe-test` | `evidence/runs/20260824T211518Z/test-results/observe.txt` | Scraped :9650 `/ext/metrics`. `AvalancheGoDown` fired because Northstar :9654 is down. Loki ingested that line. No Grafana. |
+| Second customer overlay (Meridian) | locally-executed | `make overlay-test` | `evidence/runs/20260824T220210Z/test-results/overlay.txt` | Deployed chain ID 431273 on NodeID-CBerFpFqcctMGSFUVHjX9zPGrFfBWc94U. Height 7 then 8. Local PoA is still ewoq. Relayer/ICM for Meridian did not run. Not terraform apply. |
 | AWS deployment | source-written | `terraform fmt -check` | `docs/aws-kit-gaps.md` | Never applied |
 | Hardware HSM custody | not implemented | n/a | n/a | Needs real hardware |
 | Production / regulated customer | not implemented | n/a | n/a | Fictional engagement |
@@ -45,6 +46,6 @@ Sprint 4: live ICM through the already-tested contracts.
 
 Sprint 5-8: locally executed. See `docs/sprint-5-8-local.md` and `evidence/runs/20260824T211518Z/`.
 
-Sprint 9: second overlay (Meridian) after the kit has been used once for real.
+Sprint 9: Meridian overlay. See `docs/sprint-9-overlay.md`.
 
 Do not start Sprint 5-9 until Sprint 2 produces advancing block heights. A proxy and a dashboard in front of a missing chain is still a simulator.

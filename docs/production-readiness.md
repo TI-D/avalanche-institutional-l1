@@ -23,7 +23,7 @@ Canonical status table: the `/readiness` page, backed by `src/lib/evidence.ts`.
 
 ## Stage 2
 
-Plan: `docs/stage-2-local.md`. Wrappers exist. Not booted. No NodeIDs or tx hashes are checked in.
+Plan: `docs/stage-2-local.md`. Locally executed. Evidence: `evidence/runs/20260824T202726Z/` (heights, add/remove, ICM, same-NodeID restore) and `evidence/runs/20260824T211518Z/` (signer, Envoy mTLS, OpenBao+restic, Prometheus/Loki). CLI default is 2 primary + 1 AvalancheGo per L1, not a 5-validator quorum.
 
 ## Stage 3
 

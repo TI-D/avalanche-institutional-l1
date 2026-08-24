@@ -42,8 +42,8 @@ export default function ValidatorsPage() {
       lede="This is the flow I wanted to be able to whiteboard. Creating three nodes is not the skill. Driving ValidatorManager against the P-Chain is."
       evidence={{
         level: "source-written",
-        title: "Accurate lifecycle. No transactions from this repo.",
-        note: "./scripts/add-validator posts to the JSON control plane. Stage 2's avalanche blockchain addValidator wrapper has not been run.",
+        title: "Lifecycle ran locally. Stage 1 buttons are still JSON.",
+        note: "RegisterL1ValidatorTx 26nvYesCtZBFPVzCGEXBgmbhFMJfywLzByDyMWYiSvGxFk8Psj and SetL1ValidatorWeightTx 2WrycUE8CC4tTK3QwrwBUZgpY1SFdJYLdwXf7WTbaocViv8QFh. ./scripts/add-validator still only writes the control-plane JSON.",
       }}
     >
       <ol className="space-y-3">
@@ -69,7 +69,7 @@ export default function ValidatorsPage() {
         <p>
           Ava&apos;s interchain SDK can orchestrate the full register/remove path: wait for Warp signatures, submit the P-Chain transaction, then call complete* on the L1. This repo does not yet wrap that SDK.{" "}
           <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">./scripts/add-validator</code> updates the Stage 1 model.{" "}
-          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">./scripts/local/add-validator</code> is an unrun wrapper around the interactive CLI.
+          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[13px]">./scripts/local/add-validator</code> ran against the local network.
         </p>
       </Section>
     </DocPage>

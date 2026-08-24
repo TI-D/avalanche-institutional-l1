@@ -1,7 +1,15 @@
-name               = "northstar-l1"
+# Copy an overlay. Do not terraform apply from this laptop.
+#   cp ../../../overlays/northstar/terraform.tfvars terraform.tfvars
+#   cp ../../../overlays/meridian/terraform.tfvars terraform.tfvars
+name               = "from-overlay"
 region             = "us-east-1"
 vpc_cidr           = "10.64.0.0/16"
-operator_cidrs     = ["10.20.0.0/16"]
-validator_count    = 3
-ami_id             = "ami-replace-me"
-backup_bucket_name = "northstar-l1-staking-backup"
+operator_cidrs     = ["10.64.10.0/24"]
+validator_count    = 5
+ami_id             = "ami-unspecified"
+backup_bucket_name = "from-overlay-staking-backup"
+tags = {
+  Customer    = "from-overlay"
+  Environment = "reference"
+  System      = "avalanche-l1"
+}

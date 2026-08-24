@@ -11,8 +11,8 @@ export default function IcmPage() {
       lede="One boring message is enough: AssetApproved on Northstar becomes ApprovalReceived on Settlement. That single path forces the interoperability architecture into the open."
       evidence={{
         level: "source-written",
-        title: "Authorization is tested. Delivery is not.",
-        note: "SettlementReceiver now requires the expected source blockchain and origin registry. Relayer policy is explicit. No Teleporter message has been sent on a live L1.",
+        title: "Authorization is tested. Delivery ran once locally.",
+        note: "setApproval(82731) produced Settlement ApprovalReceived in 0x13c7b1b0e88e50360558920bcd74e007854bc557bd484d20f2b36357ed2599fa. Relayer had to stay up as a process. Foundry still covers auth.",
       }}
     >
       <pre className="overflow-x-auto rounded-2xl border border-white/8 bg-[#101012] p-5 font-mono text-[12px] leading-6 text-zinc-300">

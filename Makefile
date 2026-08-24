@@ -1,4 +1,4 @@
-.PHONY: bootstrap check frontend-check contracts-check fmt-check local-up live-health lifecycle-test icm-test recovery-test signer-test network-policy-test backup-test observe-test sprint-5-8
+.PHONY: bootstrap check frontend-check contracts-check fmt-check local-up live-health lifecycle-test icm-test recovery-test signer-test network-policy-test backup-test observe-test sprint-5-8 overlay-test
 
 bootstrap:
 	npm ci
@@ -54,3 +54,6 @@ observe-test:
 
 sprint-5-8:
 	./scripts/local/record-sprint-5-8
+
+overlay-test:
+	./scripts/local/overlay-test

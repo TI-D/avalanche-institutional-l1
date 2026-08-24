@@ -1,0 +1,3 @@
+avalanche-cli avalanche version 1.9.6
+meridian chainId 431273 token MERID
+node NodeID-CBerFpFqcctMGSFUVHjX9zPGrFfBWc94U

@@ -1,0 +1,15 @@
+claim=meridian-overlay
+not=AWS-apply Fuji HSM kit-fork
+meridian_l1=meridian
+evm_chain_id=431273
+token=MERID
+poa_owner_local=0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
+deployed=yes
+rpc=http://127.0.0.1:9654/ext/bc/2w4f14E2BffSHAfnkiNv6ZY7gFQwnLegt2yHym7XoSgp5F9z8h/rpc
+node_id=NodeID-CBerFpFqcctMGSFUVHjX9zPGrFfBWc94U
+height_before_tx=7
+height_after_tx=8
+tx=0x0472cfffb65ad2f52fea9063f172dac908a4d8600cc0a4aa0033c541cddda9a2
+relayer=not deployed (CLI tried Northstar RPC which is down)
+icm_from_meridian=not executed
+tfvars=overlays/northstar/terraform.tfvars overlays/meridian/terraform.tfvars

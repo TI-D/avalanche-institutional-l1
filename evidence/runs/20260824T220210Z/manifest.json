@@ -1,0 +1,49 @@
+{
+  "id": "20260824T220210Z",
+  "recordedAt": "2026-08-24T22:04:00Z",
+  "gitCommit": "84007022d8b4933507f8b5f43801682047c25d58",
+  "mode": "locally-executed",
+  "network": "avalanche-cli local",
+  "claimsCovered": [
+    "customer-overlay"
+  ],
+  "notClaimed": [
+    "AWS apply",
+    "Fuji",
+    "HSM",
+    "Meridian ICM"
+  ],
+  "meridian": {
+    "rpc": "http://127.0.0.1:9654/ext/bc/2w4f14E2BffSHAfnkiNv6ZY7gFQwnLegt2yHym7XoSgp5F9z8h/rpc",
+    "chainId": 431273,
+    "token": "MERID",
+    "nodeId": "NodeID-CBerFpFqcctMGSFUVHjX9zPGrFfBWc94U",
+    "tx": "0x0472cfffb65ad2f52fea9063f172dac908a4d8600cc0a4aa0033c541cddda9a2",
+    "height": {
+      "before": 7,
+      "after": 8
+    }
+  },
+  "files": [
+    {
+      "path": "git-commit.txt",
+      "sha256": "a925f43f80692c9c8daa35edd03fa5b671f3583e80c7ba3fd217d1d1be97cc94"
+    },
+    {
+      "path": "logs/network-status.txt",
+      "sha256": "54b67334811003168cb20b23f74688d44662c43e1a5a78896ed56ec22b357611"
+    },
+    {
+      "path": "test-results/meridian-tx.json",
+      "sha256": "83ede2535545df269043b8e00b8f484d922327a94f7e518a3f246b8046c4c9f4"
+    },
+    {
+      "path": "test-results/overlay.txt",
+      "sha256": "9244720ec2329fc6ea93d9fac0b468f006bc29358e9c3c1af9b910237de78e68"
+    },
+    {
+      "path": "versions.txt",
+      "sha256": "207a8af9e923c5c410419d3ed0f2f2ccd587ca1ee6d890ee0e0d4c1280110abd"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+# Second-customer overlay. Creates Meridian from overlay.json. Not AWS. Not a kit fork.
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+need_cli
+
+OUT="${EVIDENCE_DIR:-$ROOT/.data/sprint-9}/test-results"
+mkdir -p "$OUT"
+
+python3 - "$ROOT" <<'PY'
+import json, os, sys
+root = sys.argv[1]
+required = ("customer", "displayName", "l1s", "poaOwnerLocal", "poaOwnerIntended", "aws", "notClaimed")
+aws_req = ("name", "region", "vpcCidr", "operatorCidrs", "validatorCount", "amiId", "backupBucketName", "tags")
+
+def load(name):
+    path = os.path.join(root, "overlays", name, "overlay.json")
+    data = json.load(open(path))
+    missing = [k for k in required if k not in data]
+    if missing:
+        raise SystemExit(f"{name}: missing {missing}")
+    missing = [k for k in aws_req if k not in data["aws"]]
+    if missing:
+        raise SystemExit(f"{name}: aws missing {missing}")
+    for cidr in data["aws"]["operatorCidrs"]:
+        if cidr.startswith("0.0.0.0/"):
+            raise SystemExit(f"{name}: operator CIDR must not be 0.0.0.0/0")
+    if data["aws"]["tags"].get("Customer") != data["customer"]:
+        raise SystemExit(f"{name}: tags.Customer must match customer")
+    if not data["l1s"]:
+        raise SystemExit(f"{name}: no L1s")
+    return data
+
+def write_tfvars(name, data):
+    aws = data["aws"]
+    cidrs = ", ".join(f'"{c}"' for c in aws["operatorCidrs"])
+    tags = "\n".join(f'  {k} = "{v}"' for k, v in aws["tags"].items())
+    body = f'''# Generated from overlay.json. Do not terraform apply from this laptop.
+name                 = "{aws["name"]}"
+region               = "{aws["region"]}"
+vpc_cidr             = "{aws["vpcCidr"]}"
+operator_cidrs       = [{cidrs}]
+validator_count      = {aws["validatorCount"]}
+ami_id               = "{aws["amiId"]}"
+backup_bucket_name   = "{aws["backupBucketName"]}"
+tags = {{
+{tags}
+}}
+'''
+    dest = os.path.join(root, "overlays", name, "terraform.tfvars")
+    open(dest, "w").write(body)
+    return dest
+
+ns = load("northstar")
+md = load("meridian")
+if ns["customer"] == md["customer"]:
+    raise SystemExit("overlays must be different customers")
+if ns["aws"]["vpcCidr"] == md["aws"]["vpcCidr"]:
+    raise SystemExit("overlays must use different VPC CIDRs")
+if ns["aws"]["region"] == md["aws"]["region"]:
+    raise SystemExit("overlays must use different regions")
+ns_ids = {x["evmChainId"] for x in ns["l1s"]}
+md_ids = {x["evmChainId"] for x in md["l1s"]}
+if ns_ids & md_ids:
+    raise SystemExit("overlays must use different EVM chain IDs")
+if {x["name"] for x in ns["l1s"]} & {x["name"] for x in md["l1s"]}:
+    raise SystemExit("overlays must use different L1 names")
+
+write_tfvars("northstar", ns)
+write_tfvars("meridian", md)
+origin = next(x for x in md["l1s"] if x["role"] == "origin")
+print(json.dumps({
+    "northstar": ns["customer"],
+    "meridian": md["customer"],
+    "meridian_l1": origin["name"],
+    "meridian_chain_id": origin["evmChainId"],
+    "meridian_token": origin["token"],
+    "poa_owner_local": md["poaOwnerLocal"],
+}, indent=2))
+open(os.path.join(root, ".data", "meridian-create.env"), "w").write(
+    f"L1_NAME={origin['name']}\nEVM_CHAIN_ID={origin['evmChainId']}\nEVM_TOKEN={origin['token']}\nPOA_OWNER={md['poaOwnerLocal']}\n"
+)
+PY
+
+# shellcheck disable=SC1091
+source "$ROOT/.data/meridian-create.env"
+mkdir -p "$ROOT/.data"
+
+if avalanche blockchain list --skip-update-check 2>/dev/null | grep -Fqw "$L1_NAME"; then
+  echo "Config $L1_NAME already exists."
+else
+  avalanche blockchain create "$L1_NAME" \
+    --evm \
+    --latest \
+    --proof-of-authority \
+    --test-defaults \
+    --icm \
+    --evm-chain-id "$EVM_CHAIN_ID" \
+    --evm-token "$EVM_TOKEN" \
+    --validator-manager-owner "$POA_OWNER" \
+    --proxy-contract-owner "$POA_OWNER" \
+    --skip-update-check
+fi
+
+DEPLOYED=no
+RPC=""
+HEIGHT=""
+if avalanche network status --skip-update-check 2>/dev/null | sed 's/\x1b\[[0-9;?]*[A-Za-z]//g' | grep -q "Network is Up"; then
+  avalanche blockchain deploy "$L1_NAME" --local --ewoq --skip-update-check
+  DEPLOYED=yes
+  RPC="$(avalanche blockchain describe "$L1_NAME" --local --skip-update-check 2>/dev/null | python3 -c '
+import sys,re
+text=sys.stdin.read()
+m=re.search(r"http://127\.0\.0\.1:\d+/ext/bc/[A-Za-z0-9]+/rpc", text)
+print(m.group(0) if m else "")
+')"
+  if [[ -n "$RPC" ]] && command -v cast >/dev/null 2>&1; then
+    HEIGHT="$(cast block-number --rpc-url "$RPC" 2>/dev/null || true)"
+    if [[ -n "${ADMIN_KEY:-}" || -f "$ROOT/.data/local-rpc.env" ]]; then
+      # shellcheck disable=SC1091
+      source "$ROOT/.data/local-rpc.env"
+      TX="$(cast send "$ADMIN_ADDRESS" --value 0 --private-key "$ADMIN_KEY" --rpc-url "$RPC" --json 2>/dev/null || true)"
+      if [[ -n "$TX" ]]; then
+        echo "$TX" >"$OUT/meridian-tx.json"
+        HEIGHT="$(cast block-number --rpc-url "$RPC")"
+      fi
+    fi
+  fi
+else
+  echo "local network is down. Meridian config was created. Deploy skipped."
+fi
+
+{
+  echo "claim=meridian-overlay"
+  echo "not=AWS-apply Fuji HSM kit-fork"
+  echo "meridian_l1=$L1_NAME"
+  echo "evm_chain_id=$EVM_CHAIN_ID"
+  echo "token=$EVM_TOKEN"
+  echo "poa_owner_local=$POA_OWNER"
+  echo "deployed=$DEPLOYED"
+  echo "rpc=$RPC"
+  echo "height=$HEIGHT"
+  echo "tfvars=overlays/northstar/terraform.tfvars overlays/meridian/terraform.tfvars"
+} | tee "$OUT/overlay.txt"

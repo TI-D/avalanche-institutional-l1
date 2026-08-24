@@ -22,7 +22,7 @@ const stages = [
     status: "Locally executed: heights, add/remove, ICM receipt, same-NodeID restore.",
     title: "Real local AvalancheGo network",
     cost: "This machine. No AWS. No AVAX. No HSM.",
-    body: "Avalanche-CLI boots a local Primary Network, deploys Northstar and Settlement as PoA L1s, starts the ICM relayer, and drives ValidatorManager on the real P-Chain. Institutional boundaries (mTLS, remote signer, isolated backup) are emulated locally later and never labeled AWS or HSM.",
+    body: "Avalanche-CLI boots a local Primary Network, deploys Northstar and Settlement as PoA L1s, starts the ICM relayer, and drives ValidatorManager on the real P-Chain. Sprint 5-8 local substitutes (Envoy, signer, OpenBao+restic, Prometheus/Loki) have artifacts. None of those are AWS or HSM.",
     proof: "make local-up && make live-health shows two advancing chain heights. Evidence lands in evidence/runs/.",
     href: "/stages#stage-2",
     cta: "Read the local runbook",

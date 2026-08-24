@@ -109,8 +109,15 @@ export const capabilities: Capability[] = [
     id: "observability",
     name: "Metrics, logs, alerts",
     level: "locally-executed",
-    notes: "Prometheus 3.14.0 scraped primary :9650 /ext/metrics (up=1). Alert AvalancheGoDown fired on northstar :9654 (already down). Loki 3.7.6 ingested that drill line. No Grafana. Terraform CloudWatch placeholder is unused.",
+    notes: "Prometheus 3.14.0 scraped primary :9650 /ext/metrics (up=1). Alert AvalancheGoDown fired when Northstar :9654 was down. Loki 3.7.6 ingested that drill line. No Grafana. After Sprint 9, :9654 is Meridian, not Northstar.",
     evidence: "evidence/runs/20260824T211518Z/test-results/observe.txt",
+  },
+  {
+    id: "customer-overlay",
+    name: "Second customer overlay (Meridian)",
+    level: "locally-executed",
+    notes: "Created and deployed meridian (chain ID 431273, MERID) from overlays/meridian. NodeID-CBerFpFqcctMGSFUVHjX9zPGrFfBWc94U. Height 7 then 8 after 0x0472cfffb65ad2f52fea9063f172dac908a4d8600cc0a4aa0033c541cddda9a2. Local PoA is still ewoq. Relayer/ICM for Meridian did not run. terraform apply has not been run.",
+    evidence: "evidence/runs/20260824T220210Z/test-results/overlay.txt",
   },
   {
     id: "hsm",

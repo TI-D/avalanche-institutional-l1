@@ -11,8 +11,8 @@ export default function KitPage() {
       lede="The engagement is not done when the customer network is up. It is done when the next institution can start from Terraform, Ansible, contracts, scripts, and runbooks instead of a slide deck."
       evidence={{
         level: "source-written",
-        title: "Folder layout, not a proven product.",
-        note: "No second customer overlay exists. Terraform is an unvalidated skeleton. Operator scripts for Stage 1 talk to JSON.",
+        title: "Two overlays. Terraform still never applied.",
+        note: "overlays/northstar and overlays/meridian. Same local create/deploy scripts. Stage 1 operator scripts still talk to JSON.",
       }}
     >
       <pre className="overflow-x-auto rounded-2xl border border-white/8 bg-[#101012] p-5 font-mono text-[12px] leading-6 text-zinc-300">
@@ -21,6 +21,7 @@ export default function KitPage() {
 ├── ansible/       avalanchego, hardening
 ├── contracts/     Foundry: registry, receiver, tests
 ├── scripts/       deploy, health, add/remove validator, backup, restore
+├── overlays/      northstar + meridian customer policy
 ├── docs/          architecture, threat model, lifecycle, ICM, readiness
 ├── runbooks/      failure, replacement, upgrade, incident
 └── src/           this documentation site and ops console`}

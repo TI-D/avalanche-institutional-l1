@@ -1,0 +1,33 @@
+{
+  "customer": "meridian-clearing",
+  "displayName": "Meridian Clearing",
+  "l1s": [
+    {
+      "name": "meridian",
+      "evmChainId": 431273,
+      "token": "MERID",
+      "icmAssetId": 91002,
+      "role": "origin"
+    }
+  ],
+  "poaOwnerLocal": "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC",
+  "poaOwnerIntended": {
+    "note": "2-of-3 officer set. Not issued. Local create uses ewoq.",
+    "roles": ["chief-counsel", "ciso", "head-of-clearing"]
+  },
+  "aws": {
+    "name": "meridian-l1",
+    "region": "eu-west-1",
+    "vpcCidr": "10.81.0.0/16",
+    "operatorCidrs": ["10.81.10.0/24"],
+    "validatorCount": 5,
+    "amiId": "ami-unspecified",
+    "backupBucketName": "meridian-l1-staking-backup",
+    "tags": {
+      "Customer": "meridian-clearing",
+      "Environment": "reference",
+      "System": "avalanche-l1"
+    }
+  },
+  "notClaimed": ["AWS apply", "Fuji", "HSM"]
+}
